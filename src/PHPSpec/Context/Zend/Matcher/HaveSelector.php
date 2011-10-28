@@ -86,27 +86,58 @@ class HaveSelector implements Matcher
             $this->_expected
         );
         if ($constraint->evaluate($content, 'assertQuery')) {
-            if (is_array($this->_conditions) && !empty($this->_conditions)) {
-                $selector = $this->_expected;
-                foreach ($this->_conditions as $name => $value) {
-                    if ($name === 'content') {
-                        $constraint = new DomQuery($this->_expected);
-                        return $constraint->evaluate(
-                            $content, 'assertQueryContentContains', $value
-                        );
-                    }
-                    $selector .= "[$name=\"$value\"]";
+            if ($this->hasConditions()) {
+                if ($selectorConstraint = $this->buildSelectorConstraint($content)) {
+                    return $selectorConstraint->evaluate(
+                        $content, 'assertQuery'
+                    );
                 }
-                $constraint = new DomQuery($selector);
-                if ($constraint->evaluate($content, 'assertQuery')) {
-                    return true;
-                } else {
-                    return false;
-                }
+                return false;
             }
             return true;
         }
         return false;
+    }
+    
+    /**
+     * Checks whether there are extra conditions for matching a selector
+     *
+     * @return boolean
+     */
+    private function hasConditions()
+    {
+        return is_array($this->_conditions) && !empty($this->_conditions);
+    }
+    
+    /**
+     * Builds a selector constraint
+     *
+     * @param string $content
+     *
+     * @return boolean
+     */
+    private function buildSelectorConstraint($content)
+    {
+        $selector = $this->_expected;
+        foreach ($this->_conditions as $condition => $value) {
+            if ($condition === 'content' &&
+                $this->contentIsNotPresent($content, $value)) {
+                return false;
+            }
+            $selector .= "[$condition=\"$value\"]";
+        }
+        return new DomQuery($selector);
+    }
+    
+    /**
+     *
+     */
+    private function contentIsNotPresent($content, $value)
+    {
+        $constraint = new DomQuery($this->_expected);
+        return !$constraint->evaluate(
+            $content, 'assertQueryContentContains', $value
+        );
     }
     
     /**

@@ -77,7 +77,7 @@ class Zend extends Context
                 'create'),
             func_get_args()
         );
-        $interceptor->addMatchers(array('redirect', 'redirectTo'));
+        $interceptor->addMatchers(array('redirect', 'redirectTo', 'beSuccess'));
         return $interceptor;
     }
     
