@@ -90,6 +90,6 @@ class Redirect implements Matcher
      */
     public function getDescription()
     {
-        return 'redirect';
+        return 'redirect to ' . $this->_expected;
     }
 }

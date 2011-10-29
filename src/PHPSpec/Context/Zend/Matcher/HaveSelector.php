@@ -170,6 +170,6 @@ class HaveSelector implements Matcher
      */
     public function getDescription()
     {
-        return 'contain';
+        return 'have selector ' . $this->_expected;
     }
 }

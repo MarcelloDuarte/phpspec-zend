@@ -64,6 +64,18 @@ class Controller extends Context
     public $action;
     
     /**
+     * Front controller
+     *
+     * @var Zend_Controller_Front
+     */
+    public $frontController;
+    
+    public function before()
+    {
+        $this->reset();
+    }
+    
+    /**
      * Dispatches a get request to a given url
      * 
      * @param string $url
@@ -155,6 +167,20 @@ class Controller extends Context
         return $interceptor;
     }
     
+    public function assigns($variable)
+    {
+        if ($this->frontController === null) {
+            throw new \PHPSpec\Exception('You must send a request before using assigns');
+        }
+        $bootstrap = $this->frontController->getActualValue()->getParam('bootstrap');
+        $bootstrap->bootstrap('view');
+        $view = $bootstrap->getResource('view');
+        if (!isset($view->$variable)) {
+            throw new \PHPSpec\Specification\Result\Failure("$variable is not assigned");
+        }
+        return $this->spec($view->$variable);
+    }
+    
     /**
      * Dispatches from zend test and fetch results into local variables
      * 
@@ -170,7 +196,8 @@ class Controller extends Context
         );
         $this->action = $this->spec($zendTest->request->getActionName());
         $this->response = $this->spec($zendTest->response);
-        $this->request = $this->spec($zendTest->request); 
+        $this->request = $this->spec($zendTest->request);
+        $this->frontController = $this->spec($zendTest->getFrontController());
     }
     
     /**
@@ -184,5 +211,15 @@ class Controller extends Context
             $this->_zendTest = new ZendTest;
         }
         return $this->_zendTest;
+    }
+    
+    public function reset()
+    {
+        $this->module = null;
+        $this->controller = null;
+        $this->action = null;
+        $this->response = null;
+        $this->request = null;
+        $this->frontController = null;
     }
 }
