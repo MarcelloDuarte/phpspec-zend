@@ -56,9 +56,8 @@ class BeSuccess implements Matcher
      */
     public function matches($response)
     {
-        $constraint = new \Zend_Test_PHPUnit_Constraint_ResponseHeader();
-        if (!$constraint->evaluate($response, 'assertResponseCode', $this->_expectedCode)) {
-            $this->_actualCode = $response->getHttpResponseCode();
+        $this->_actualCode = $response->getHttpResponseCode();
+        if ($this->_actualCode !== $this->_expectedCode) {
             return false;
         };
         return true;
