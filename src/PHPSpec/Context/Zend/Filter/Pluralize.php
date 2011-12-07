@@ -622,8 +622,7 @@ class PHPSpec_Context_Zend_Filter_Pluralize implements Zend_Filter_Interface
      */
     private function endsWith($end)
     {
-        $lowercase = strtolower($this->_value);
-        return substr($lowercase, (-1 * strlen($end))) === $end;
+        return preg_match('/(' . $end . ')$/i', $this->_value);
     }
     
     /**
