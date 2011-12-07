@@ -605,11 +605,11 @@ class PHPSpec_Context_Zend_Filter_Pluralize implements Zend_Filter_Interface
      * @param string $plural 
      * @return string
      */
-    private function replaceSuffixWithPlural($singular, $plural)
+    private function replaceSuffixWithPlural($suffix, $plural)
     {
         return preg_replace(
             '/(' . $plural . ')$/i',
-            substr($plural, 0, 1) . substr($singular, 1),
+            substr($plural, 0, 1) . substr($suffix, 1),
             $this->_value
         );
     }
