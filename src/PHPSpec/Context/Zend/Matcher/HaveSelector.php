@@ -1,5 +1,4 @@
 <?php
-
 /**
  * PHPSpec
  *
@@ -30,7 +29,7 @@ require_once 'PHPUnit/Autoload.php';
 use \PHPSpec\Matcher,
     \PHPSpec\Util\Validate,
     \PHPSpec\Specification\Interceptor\InterceptorFactory,
-    \Zend_Test_PHPUnit_Constraint_DomQuery as DomQuery;
+    \Zend_Dom_Query as DomQuery;
 
 /**
  * @category   PHPSpec
@@ -42,9 +41,26 @@ use \PHPSpec\Matcher,
  */
 class HaveSelector implements Matcher
 {
+    /**
+     * The CSS selector used to query the dom
+     *
+     * @var string
+     */
     protected $_selector;
+    
+    /**
+     * Css selector attributes
+     *
+     * @var array
+     */
     protected $_conditions = array();
-    protected $_block;
+    
+    /**
+     * Whether the selector has attribute filters
+     *
+     * @var boolean
+     */
+    protected $_hasContentCondition = false;
     
     /**
      * Creates the matcher
@@ -82,21 +98,29 @@ class HaveSelector implements Matcher
     public function matches($content)
     {
         $this->_actual = $content;
-        $constraint = new DomQuery(
-            $this->_expected
-        );
-        if ($constraint->evaluate($content, 'assertQuery')) {
-            if ($this->hasConditions()) {
-                if ($selectorConstraint = $this->buildSelectorConstraint($content)) {
-                    return $selectorConstraint->evaluate(
-                        $content, 'assertQuery'
-                    );
-                }
-                return false;
+        
+        if ($this->hasConditions()) {
+            $this->buildSelector($content);
+            
+            if ($this->hasContentCondition()) {
+                return $this->matchesContent($content);
             }
-            return true;
         }
-        return false;
+        
+        return $this->query($content);
+    }
+    
+    /**
+     * Queries the DOM for a content
+     *
+     * @param string $content 
+     * @return boolean
+     */
+    private function query($content)
+    {
+        $domQuery = new DomQuery($content);
+        $result = $domQuery->query($this->_expected);
+        return (0 < count($result));
     }
     
     /**
@@ -110,34 +134,91 @@ class HaveSelector implements Matcher
     }
     
     /**
-     * Builds a selector constraint
+     * Tries to Build a css selector
      *
      * @param string $content
      *
      * @return boolean
      */
-    private function buildSelectorConstraint($content)
+    private function buildSelector($content)
     {
         $selector = $this->_expected;
         foreach ($this->_conditions as $condition => $value) {
-            if ($condition === 'content' &&
-                $this->contentIsNotPresent($content, $value)) {
-                return false;
+            if ($condition == 'content') {
+                $this->_hasContentCondition = true;
+                continue;
             }
             $selector .= "[$condition=\"$value\"]";
         }
-        return new DomQuery($selector);
+        $this->_expected = $selector;
     }
     
     /**
+     * Gets the flag the tells whether the selector has attribute filters
      *
+     * @return boolean
+     */
+    protected function hasContentCondition()
+    {
+        return $this->_hasContentCondition;
+    }
+    
+    /**
+     * Checks the special case where the css attribute "content" is used
+     *
+     * @param string $content 
+     * @return boolean
+     */
+    private function matchesContent($content)
+    {
+        foreach ($this->_conditions as $condition => $value) {
+            if ($condition == 'content') {
+                if ($this->contentIsNotPresent($content, $value)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    
+    /**
+     * Checks whether the content is empty
+     *
+     * @param string $content
+     * @param string $value
+     * @return boolean
      */
     private function contentIsNotPresent($content, $value)
     {
-        $constraint = new DomQuery($this->_expected);
-        return !$constraint->evaluate(
-            $content, 'assertQueryContentContains', $value
-        );
+        $domQuery = new DomQuery($content);
+        $result = $domQuery->query($this->_expected);
+        
+        if (count($result) == 0) {
+            return true;
+        }
+        
+        foreach ($result as $node) {
+            $nodeContent = $this->getNodeContent($node);
+            if (strstr($nodeContent, $value)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /**
+     * Get node content, minus node markup tags
+     *
+     * @param  DOMNode $node
+     * @return string
+     */
+    protected function getNodeContent(\DOMNode $node)
+    {
+        if ($node instanceof \DOMAttr) {
+            return $node->value;
+        }
+        $regex   = '|</?' . $node->nodeName . '[^>]*>|';
+        return preg_replace($regex, '', $node->ownerDocument->saveXML($node));
     }
     
     /**
@@ -147,9 +228,10 @@ class HaveSelector implements Matcher
      */
     public function getFailureMessage()
     {
-        return 'expected ' . var_export($this->_actual, true) . ' to contain ' .
+        return 'expected ' . var_export($this->_actual, true) .
+               ' to have selector ' .
                var_export($this->_expected, true) .
-               ', found no match (using contain())';
+               ', found no match (using haveSelector())';
     }
 
     /**
@@ -159,8 +241,9 @@ class HaveSelector implements Matcher
      */
     public function getNegativeFailureMessage()
     {
-        return 'expected not to contain' . var_export($this->_expected, true) .
-               ', but found a match (using contain())';
+        return 'expected not to have selector ' .
+               var_export($this->_expected, true) .
+               ', but found a match (using haveSelector())';
     }
 
     /**

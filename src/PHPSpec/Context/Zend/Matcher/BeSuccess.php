@@ -38,11 +38,30 @@ use \PHPSpec\Matcher;
  */
 class BeSuccess implements Matcher
 {
+    /**
+     * Success HTTP status code
+     */
     const SUCCESS = 200;
 
+    /**
+     * The expected code
+     *
+     * @var integer
+     */
     protected $_expectedCode;
+    
+    /**
+     * The actual code
+     *
+     * @var integer
+     */
     protected $_actualCode;
 
+    /**
+     * Be success is created with the success expected code
+     *
+     * @param irrelevant $unused
+     */
     public function __construct($unused = 200)
     {
         $this->_expectedCode = self::SUCCESS;
@@ -57,10 +76,7 @@ class BeSuccess implements Matcher
     public function matches($response)
     {
         $this->_actualCode = $response->getHttpResponseCode();
-        if ($this->_actualCode !== $this->_expectedCode) {
-            return false;
-        };
-        return true;
+        return $this->_actualCode === $this->_expectedCode;
     }
     
     /**
@@ -70,7 +86,8 @@ class BeSuccess implements Matcher
      */
     public function getFailureMessage()
     {
-        return 'expected to be success, got code ' . $this->_actualCode . ' (using beSuccess())';
+        return 'expected to be success, got code ' . $this->_actualCode .
+               ' (using beSuccess())';
     }
 
     /**
@@ -80,7 +97,8 @@ class BeSuccess implements Matcher
      */
     public function getNegativeFailureMessage()
     {
-        return 'expected not to be success, but got success (using beSuccess())';
+        return 'expected not to be success, ' .
+               'but got success (using beSuccess())';
     }
 
     /**

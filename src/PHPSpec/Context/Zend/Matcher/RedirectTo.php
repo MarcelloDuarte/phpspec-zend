@@ -1,5 +1,4 @@
 <?php
-
 /**
  * PHPSpec
  *
@@ -35,7 +34,7 @@ use \PHPSpec\Matcher;
  *                                     Marcello Duarte
  * @license    http://www.gnu.org/licenses/lgpl-3.0.txt GNU Lesser General Public Licence Version 3
  */
-class Redirect implements Matcher
+class RedirectTo implements Matcher
 {
     /**
      * 
@@ -54,13 +53,15 @@ class Redirect implements Matcher
      */
     public function matches($response)
     {
-        $constraint = new \Zend_Test_PHPUnit_Constraint_Redirect();
-        if (!$constraint->evaluate(
-            $response, 'assertRedirectTo', $this->_expected
-        )) {
+        if (!$response->isRedirect()) {
+            $this->_actual = 'no url';
             return false;
-        };
-        return true;
+        }
+        
+        $headers  = $response->sendHeaders();
+        $this->_actual = str_replace('Location: ', '', $headers['location']);
+
+        return $this->_actual === $this->_expected;
     }
 
     /**
@@ -70,7 +71,9 @@ class Redirect implements Matcher
      */
     public function getFailureMessage()
     {
-        return 'expected to redirect, got no redirection (using redirect())';
+        return 'expected to redirect to ' . $this->_expected .
+               ', got redirected to ' . $this->_actual .
+               ' (using redirectTo())';
     }
 
     /**
@@ -80,7 +83,9 @@ class Redirect implements Matcher
      */
     public function getNegativeFailureMessage()
     {
-        return 'expected not to redirect, but redirected (using redirect())';
+        return 'expected not to redirect to ' . $this->_expected .
+               ', but got redirected to ' . $this->_expected .
+               ' (using redirectTo())';
     }
 
     /**

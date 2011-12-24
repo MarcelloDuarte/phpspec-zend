@@ -1,5 +1,4 @@
 <?php
-
 /**
  * PHPSpec
  *
@@ -55,11 +54,7 @@ class Redirect implements Matcher
      */
     public function matches($response)
     {
-        $constraint = new \Zend_Test_PHPUnit_Constraint_Redirect();
-        if (!$constraint->evaluate($response, 'assertRedirect')) {
-            return false;
-        };
-        return true;
+        return $response->isRedirect();
     }
 
     /**

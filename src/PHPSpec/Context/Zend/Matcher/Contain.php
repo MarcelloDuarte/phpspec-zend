@@ -59,10 +59,7 @@ class Contain implements Matcher
         $actual = preg_replace('/(<script>.*?<\/script>)/', '', $actual);
         $actual = preg_replace('/(<head>.*?<\/head>)/', '', $actual);
         $actual = strip_tags($actual);
-        if (strpos($actual, $this->_expected) !== false) {
-            return true;
-        }
-        return false;
+        return strpos($actual, $this->_expected) !== false;
     }
     
     /**
@@ -83,7 +80,7 @@ class Contain implements Matcher
      */
     public function getNegativeFailureMessage()
     {
-        return 'expected not to contain' . var_export($this->_expected, true) .
+        return 'expected not to contain ' . var_export($this->_expected, true) .
                ', but found a match (using contain())';
     }
 
