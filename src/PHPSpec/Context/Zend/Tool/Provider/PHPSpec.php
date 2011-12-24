@@ -32,6 +32,11 @@ class PHPSpec_Context_Zend_Tool_Provider_Phpspec
     extends Zend_Tool_Project_Provider_Abstract
 {
     
+    /**
+     * Generate action of the phpspec provider
+     *
+     * @return void 
+     */
     public function generate()
     {
         $this->_loadProfile(self::NO_PROFILE_THROW_EXCEPTION);
@@ -44,43 +49,70 @@ class PHPSpec_Context_Zend_Tool_Provider_Phpspec
         
         $response = $this->_registry->getResponse();
         
-        $response->appendContent("      create", array('separator' => false, 'color' => 'green'));
+        $response->appendContent(
+            "      create",
+            array('separator' => false, 'color' => 'green')
+        );
         $response->appendContent("  spec");
         mkdir('spec');
         
-        $response->appendContent("      create", array('separator' => false, 'color' => 'green'));
+        $response->appendContent(
+            "      create",
+            array('separator' => false, 'color' => 'green')
+        );
         $response->appendContent("  spec/SpecHelper.php");
         file_put_contents('spec/SpecHelper.php', $this->_getSpecHelperText());
         
-        $response->appendContent("      create", array('separator' => false, 'color' => 'green'));
+        $response->appendContent(
+            "      create",
+            array('separator' => false, 'color' => 'green')
+        );
         $response->appendContent("  spec/.phpspec");
         touch('spec/.phpspec');
         
-        $response->appendContent("      create", array('separator' => false, 'color' => 'green'));
+        $response->appendContent(
+            "      create",
+            array('separator' => false, 'color' => 'green')
+        );
         $response->appendContent("  spec/models");
         mkdir('spec/models');
         
-        $response->appendContent("      create", array('separator' => false, 'color' => 'green'));
+        $response->appendContent(
+            "      create",
+            array('separator' => false, 'color' => 'green')
+        );
         $response->appendContent("  spec/views");
         mkdir('spec/views');
         
-        $response->appendContent("      create", array('separator' => false, 'color' => 'green'));
+        $response->appendContent(
+            "      create",
+            array('separator' => false, 'color' => 'green')
+        );
         $response->appendContent("  spec/controllers");
         mkdir('spec/controllers');
     }
     
+    /**
+     * Creates the SpecHelper file text
+     *
+     * @return string
+     */
     protected function _getSpecHelperText()
     {
+        $path = "'APPLICATION_PATH', " .
+                "realpath(dirname(__FILE__) . '/../application')";
+        $env = "'APPLICATION_ENV', (getenv('APPLICATION_ENV') ? " .
+               "getenv('APPLICATION_ENV') : 'testing')"
         return <<<HELPER
 <?php
 
 // Define path to application directory
 defined('APPLICATION_PATH')
-    || define('APPLICATION_PATH', realpath(dirname(__FILE__) . '/../application'));
+    || define($path);
 
 // Define application environment
 defined('APPLICATION_ENV')
-    || define('APPLICATION_ENV', (getenv('APPLICATION_ENV') ? getenv('APPLICATION_ENV') : 'testing'));
+    || define($env);
 
 // Ensure library/ is on include_path
 set_include_path(implode(PATH_SEPARATOR, array(

@@ -22,7 +22,8 @@
  
 require_once 'PHPSpec/Context/Zend/Filter/UCFirst.php';
 
-use PHPSpec_Context_Zend_Filter_UCFirst as UCFirst;
+use PHPSpec_Context_Zend_Filter_UCFirst as UCFirst,
+    Zend_CodeGenerator_Php_Property as PropertyGenerator;
 
 /**
  * @category   PHPSpec
@@ -73,40 +74,67 @@ class PHPSpec_Context_Zend_Tool_Context_ModelFile
         parent::init();
     }
     
+    /**
+     * Accessor for the model name
+     *
+     * @return string
+     */
     public function getModelName()
     {
         return $this->_modelName;
     }
 
+    /**
+     * Generates the content of the model file
+     *
+     * @return void
+     * @author Marcello Duarte  
+     */
     public function getContents()
     {
-        $className = $this->getFullClassName($this->_modelName, 'Model');
-        $properties = count($this->_fields) ? $this->getProperties($this->_fields) : array();
-        $methods = count($this->_fields) ? $this->getMethods($this->_fields, $this->_modelName) : array();
+        $className  = $this->getFullClassName($this->_modelName, 'Model');
+        $properties = count($this->_fields) ?
+                      $this->getProperties($this->_fields) :
+                      array();
+        $methods    = count($this->_fields) ?
+                      $this->getMethods($this->_fields, $this->_modelName) :
+                      array();
 
-        $codeGenFile = new Zend_CodeGenerator_Php_File(array(
-            'fileName' => $this->getPath(),
-            'classes' => array(
-                new Zend_CodeGenerator_Php_Class(array(
-                    'name' => $className,
-                    'properties' => $properties,
-                    'methods' => $methods
-                    ))
+        $codeGenFile = new Zend_CodeGenerator_Php_File(
+            array(
+                'fileName' => $this->getPath(),
+                'classes' => array(
+                    new Zend_CodeGenerator_Php_Class(
+                        array(
+                            'name' => $className,
+                            'properties' => $properties,
+                            'methods' => $methods
+                        )
+                    )
                 )
-            ));
+            )
+        );
         return $codeGenFile->generate();
     }
     
+    /**
+     * Generates the properties code
+     *
+     * @param array $fields 
+     * @return string
+     */
     protected function getProperties(array $fields)
     {
         $properties = array();
         foreach ($fields as $field) {
             $varAndType = explode(':', $field);
-            list($varname, $type) = count($varAndType) > 1 ? $varAndType : array($varAndType[0], 'mixed');
-            $properties[] = new Zend_CodeGenerator_Php_Property(
+            list($varname, $type) = count($varAndType) > 1 ?
+                                    $varAndType :
+                                    array($varAndType[0], 'mixed');
+            $properties[] = new PropertyGenerator(
                 array(
                     'name' => "_$varname",
-                    'visibility' => Zend_CodeGenerator_Php_Property::VISIBILITY_PROTECTED,
+                    'visibility' => PropertyGenerator::VISIBILITY_PROTECTED,
                     'docblock' => "@var $type \$$varname"
                 )
             );
@@ -114,6 +142,13 @@ class PHPSpec_Context_Zend_Tool_Context_ModelFile
         return $properties;
     }
     
+    /**
+     * Creates the method generators
+     *
+     * @param array  $fields
+     * @param string $class
+     * @return array<Zend_CodeGenerator_Php_Method> 
+     */
     protected function getMethods(array $fields, $class)
     {
         $methods = array();
@@ -122,21 +157,27 @@ class PHPSpec_Context_Zend_Tool_Context_ModelFile
         $constructorBody = '';
         foreach ($fields as $field) {
             $varAndType = explode(':', $field);
-            list($varname, $type) = count($varAndType) > 1 ? $varAndType : array($varAndType[0], 'mixed');
+            list($varname, $type) = count($varAndType) > 1 ?
+                                    $varAndType :
+                                    array($varAndType[0], 'mixed');
             $methods[] = $this->_generateGetter($varname, $type);
             $methods[] = $this->_generateSetter($varname, $type);
             $constructorParameter[] = new Zend_CodeGenerator_Php_Parameter(
                 array('name' => $varname, 'defaultValue' => null)
             );
-            $contructorDocblock .= '@param ' . $type . ' $' . $varname . PHP_EOL;
-            $constructorBody .= '$this->_' . $varname . ' = $' . $varname . ';' . PHP_EOL;
+            $contructorDocblock .= '@param ' . $type .
+                                   ' $' . $varname . PHP_EOL;
+            $constructorBody .= '$this->_' . $varname . ' = $' .
+                                $varname . ';' . PHP_EOL;
         }
         
         $methods[] = $this->_generateFactory($class);
         $methods[] = $this->_generateIsValid();
         
         if (!empty($constructorParameter)) {
-            $constructor = $this->_generateConstructor($constructorParameter, $contructorDocblock, $constructorBody);
+            $constructor = $this->_generateConstructor(
+                $constructorParameter, $contructorDocblock, $constructorBody
+            );
         }
         
         array_unshift($methods, $constructor);
@@ -144,6 +185,12 @@ class PHPSpec_Context_Zend_Tool_Context_ModelFile
         return $methods;
     }
     
+    /**
+     * Creates the factory method generator
+     *
+     * @param string $name 
+     * @return Zend_CodeGenerator_Php_Method
+     */
     protected function _generateFactory($name)
     {
         return new Zend_CodeGenerator_Php_Method(
@@ -157,12 +204,17 @@ class PHPSpec_Context_Zend_Tool_Context_ModelFile
                     )
                 )),
                 'static' => true,
-                'docblock' => "Creates (as a factory) the model".PHP_EOL.PHP_EOL."@param array \$attributes",
-                'body' => '$model = new Application_Model_' . $name . ';' . PHP_EOL .
-                          'foreach ($attributes as $attribute => $value) {' . PHP_EOL .
+                'docblock' => "Creates (as a factory) the model" . PHP_EOL .
+                              PHP_EOL . "@param array \$attributes",
+                'body' => '$model = new Application_Model_' . $name . ';' .
+                          PHP_EOL .
+                          'foreach ($attributes as $attribute => $value) {' .
+                          PHP_EOL .
                           '    $setter = "set$attribute";' . PHP_EOL .
-                          '    if (method_exists($model, $setter)) {' . PHP_EOL .
-                          '        $model->$setter($attribute, $value);' . PHP_EOL .
+                          '    if (method_exists($model, $setter)) {' .
+                          PHP_EOL .
+                          '        $model->$setter($attribute, $value);' .
+                          PHP_EOL .
                           '    }' . PHP_EOL .
                           '}' . PHP_EOL .
                           'return $model;' . PHP_EOL
@@ -170,6 +222,11 @@ class PHPSpec_Context_Zend_Tool_Context_ModelFile
         );
     }
     
+    /**
+     * Creates the isValid method generator
+     *
+     * @return Zend_CodeGenerator_Php_Method
+     */
     protected function _generateIsValid()
     {
         return new Zend_CodeGenerator_Php_Method(
@@ -181,7 +238,13 @@ class PHPSpec_Context_Zend_Tool_Context_ModelFile
         );
     }
     
-    protected function _generateConstructor($constructorParameter, $contructorDocblock, $constructorBody)
+    /**
+     * Creates the constructor
+     *
+     * @return Zend_CodeGenerator_Php_Method
+     */
+    protected function _generateConstructor($constructorParameter,
+        $contructorDocblock, $constructorBody)
     {
         return new Zend_CodeGenerator_Php_Method(
             array(
@@ -193,6 +256,13 @@ class PHPSpec_Context_Zend_Tool_Context_ModelFile
         );
     }
     
+    /**
+     * Creates a setter generator
+     *
+     * @param string $varname 
+     * @param string $type 
+     * @return Zend_CodeGenerator_Php_Method
+     */
     protected function _generateSetter($varname, $type)
     {
         return new Zend_CodeGenerator_Php_Method(
@@ -203,19 +273,29 @@ class PHPSpec_Context_Zend_Tool_Context_ModelFile
                         'name' => $varname
                     )
                 )),
-                'body' => '$this->_' . $varname . ' = $' . $varname . ';'.PHP_EOL.'return $this;',
-                'docblock' => "Sets the $varname".PHP_EOL.PHP_EOL."@param $type $varname"
+                'body' => '$this->_' . $varname . ' = $' . $varname . ';' .
+                          PHP_EOL . 'return $this;',
+                'docblock' => "Sets the $varname" . PHP_EOL . PHP_EOL .
+                              "@param $type $varname"
             )
         );
     }
     
+    /**
+     * Creates a getter generator
+     *
+     * @param string $varname 
+     * @param string $type 
+     * @return Zend_CodeGenerator_Php_Method
+     */
     protected function _generateGetter($varname, $type)
     {
         return new Zend_CodeGenerator_Php_Method(
             array(
                 'name' => "get" . UCFirst::apply($varname),
                 'body' => 'return $this->_' . $varname . ';',
-                'docblock' => "Gets the $varname".PHP_EOL.PHP_EOL."@return $type"
+                'docblock' => "Gets the $varname" . PHP_EOL . PHP_EOL .
+                              "@return $type"
             )
         );
     }

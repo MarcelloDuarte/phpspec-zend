@@ -26,7 +26,8 @@ require_once 'PHPSpec/Context/Zend/Filter/UCFirst.php';
 use PHPSpec_Context_Zend_Filter_LCFirst as LCFirst,
     Zend_Filter_Word_CamelCaseToDash as CamelCaseToDash,
     PHPSpec_Context_Zend_Filter_UCFirst as UCFirst,
-    Zend_Filter_Word_DashToCamelCase as DashToCamelCase;
+    Zend_Filter_Word_DashToCamelCase as DashToCamelCase,
+    Zend_Tool_Project_Provider_Exception as ProviderException;
 
 /**
  * @category   PHPSpec
@@ -45,7 +46,9 @@ class PHPSpec_Context_Zend_Tool_Provider_ViewSpec
         $this->_loadProfile(self::NO_PROFILE_THROW_EXCEPTION);
         
         if (!is_dir('spec')) {
-            throw new Zend_Tool_Project_Provider_Exception('Please run zf generate phpspec, to create the environment');
+            throw new ProviderException(
+                'Please run zf generate phpspec, to create the environment'
+            );
         }
         
         $response = $this->_registry->getResponse();
@@ -62,15 +65,17 @@ class PHPSpec_Context_Zend_Tool_Provider_ViewSpec
         
         if ($name !== $originalName) {
             $response->appendContent(
-                'Note: The canonical view name that ' . $tense
-                    . ' used with other providers is "' . $name . '";'
-                    . ' not "' . $originalName . '" as supplied',
+                'Note: The canonical view name that ' . $tense .
+                ' used with other providers is "' . $name . '";' .
+                ' not "' . $originalName . '" as supplied',
                 array('color' => array('yellow'))
-                );
+            );
         }
         
         try {
-            $viewResource = self::createResource($this->_loadedProfile, $name, $controllerName, $module);    
+            $viewResource = self::createResource(
+                $this->_loadedProfile, $name, $controllerName, $module
+            );    
                        
         } catch (Exception $e) {
             $response->setException($e);
@@ -78,29 +83,47 @@ class PHPSpec_Context_Zend_Tool_Provider_ViewSpec
         }
         
         // view spec
-        $inflectedController = strtolower($camelCaseToDashFilter->filter($controllerName));
+        $inflectedController = strtolower(
+            $camelCaseToDashFilter->filter($controllerName)
+        );
         $viewPath = str_replace(
             basename($viewResource->getContext()->getPath()),
-            '', $viewResource->getContext()->getPath());
+            '',
+            $viewResource->getContext()->getPath()    
+        );
         
-        $basePath = str_replace("application/views/scripts/$inflectedController", '', $viewPath);
+        $basePath = str_replace(
+            "application/views/scripts/$inflectedController", '', $viewPath
+        );
         $specNameFilter = new DashToCamelCase();
         $specName = UCFirst::apply($specNameFilter->filter($name));
         
         $moduleController = $inflectedController;
         if ($module !== null) {
-            $moduleController .= strtolower($camelCaseToDashFilter->filter($module));
+            $moduleController .= strtolower(
+                $camelCaseToDashFilter->filter($module)
+            );
         }
         $viewSpecPath = realpath($basePath . '/spec/views') . '/' .
                         $moduleController . '/' .
                         $specName . 'Spec.php';
-        $specContent = $this->_getSpecContent($name, $controllerName, $module);
+        $specContent = $this->_getSpecContent(
+            $name, $controllerName, $module
+        );
         
         if ($request->isPretend()) {
-            $response->appendContent('Would create a view script in location ' . $viewResource->getContext()->getPath());
-            $response->appendContent('Would create a spec at ' . $viewSpecPath);
+            $response->appendContent(
+                'Would create a view script in location ' .
+                $viewResource->getContext()->getPath()
+            );
+            $response->appendContent(
+                'Would create a spec at ' . $viewSpecPath
+            );
         } else {
-            $response->appendContent('Creating a view script in location ' . $viewResource->getContext()->getPath());
+            $response->appendContent(
+                'Creating a view script in location ' .
+                $viewResource->getContext()->getPath()
+            );
             $viewResource->create();
             $response->appendContent('Creating a spec at ' . $viewSpecPath);
             if (!is_dir($basePath . '/spec/views')) {
@@ -114,6 +137,14 @@ class PHPSpec_Context_Zend_Tool_Provider_ViewSpec
         
     }
     
+    /**
+     * Creates the content of the view spec file
+     *
+     * @param string $name 
+     * @param string $controllerName 
+     * @param string $module 
+     * @return string
+     */
     protected function _getSpecContent($name, $controllerName, $module)
     {
         
