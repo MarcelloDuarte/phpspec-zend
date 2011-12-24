@@ -1,5 +1,7 @@
 <?php
 
+namespace Spec\PHPSpec\Context\Zend\Filter;
+
 require_once 'PHPSpec/Context/Zend/Filter/Pluralize.php';
 
 use \PHPSpec_Context_Zend_Filter_Pluralize as Pluralize;

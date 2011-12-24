@@ -1,5 +1,7 @@
 <?php
 
+namespace Spec\PHPSpec\Context\Zend\Filter;
+
 require_once 'PHPSpec/Context/Zend/Filter/Singularize.php';
 
 use \PHPSpec_Context_Zend_Filter_Singularize as Singularize;
