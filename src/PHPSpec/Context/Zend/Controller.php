@@ -167,16 +167,32 @@ class Controller extends Context
         return $interceptor;
     }
     
+    /**
+     * Retrieves the intercepted value assigned to a view variable in the
+     * controller, during the exising dispatch
+     *
+     * @param string $variable 
+     * @return \PHPSpec\Specification\Interceptor 
+     */
     public function assigns($variable)
     {
         if ($this->frontController === null) {
-            throw new \PHPSpec\Exception('You must send a request before using assigns');
+            throw new \PHPSpec\Exception(
+                'You must send a request before using assigns'
+            );
         }
-        $bootstrap = $this->frontController->getActualValue()->getParam('bootstrap');
-        $bootstrap->bootstrap('view');
+        $bootstrap = $this->frontController
+                          ->getActualValue()->getParam('bootstrap');
+        try {
+            $bootstrap->bootstrap('view');
+        } catch (\Zend_Application_Bootstrap_Exception $e) {
+            $view = new \Zend_View;
+        }
         $view = $bootstrap->getResource('view');
         if (!isset($view->$variable)) {
-            throw new \PHPSpec\Specification\Result\Failure("$variable is not assigned");
+            throw new \PHPSpec\Specification\Result\Failure(
+                "$variable is not assigned"
+            );
         }
         return $this->spec($view->$variable);
     }
@@ -213,6 +229,11 @@ class Controller extends Context
         return $this->_zendTest;
     }
     
+    /**
+     * Resets MVC for a new fresh request
+     *
+     * @return void
+     */
     public function reset()
     {
         $this->module = null;
