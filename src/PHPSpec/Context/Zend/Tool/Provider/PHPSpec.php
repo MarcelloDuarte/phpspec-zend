@@ -102,7 +102,7 @@ class PHPSpec_Context_Zend_Tool_Provider_Phpspec
         $path = "'APPLICATION_PATH', " .
                 "realpath(dirname(__FILE__) . '/../application')";
         $env = "'APPLICATION_ENV', (getenv('APPLICATION_ENV') ? " .
-               "getenv('APPLICATION_ENV') : 'testing')"
+               "getenv('APPLICATION_ENV') : 'testing')";
         return <<<HELPER
 <?php
 
