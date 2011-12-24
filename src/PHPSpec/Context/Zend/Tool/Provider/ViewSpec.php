@@ -41,6 +41,14 @@ class PHPSpec_Context_Zend_Tool_Provider_ViewSpec
     extends Zend_Tool_Project_Provider_View
     implements Zend_Tool_Framework_Provider_Pretendable
 {
+    /**
+     * Create action for the view-spec provider
+     *
+     * @param string $name 
+     * @param string $controllerName 
+     * @param string $module 
+     * @return void
+     */
     public function create($name, $controllerName, $module = null)
     {
         $this->_loadProfile(self::NO_PROFILE_THROW_EXCEPTION);
