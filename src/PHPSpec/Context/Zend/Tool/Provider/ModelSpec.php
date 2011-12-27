@@ -398,7 +398,7 @@ class Application_Model_{$name}Mapper
      */
     public function find(\$primaryKey)
     {
-        \$records = \$this->_{$property}Dao->find(\$primaryKey);
+        \$records = \$this->getDao()->find(\$primaryKey);
         if (count(\$records)) {
             return $name::create(\$records->current()->toArray());
         }
@@ -411,7 +411,7 @@ class Application_Model_{$name}Mapper
     public function fetchAll(
         \$condition = null, \$order = null, \$count = null, \$offset = null)
     {
-        \$records = \$this->_{$property}Dao->fetchAll(
+        \$records = \$this->getDao()->fetchAll(
             \$condition, \$order, \$count, \$offset
         );
         \${$property}s = array();
@@ -432,7 +432,7 @@ class Application_Model_{$name}Mapper
                 'id=' . (int)\${$property}->getId(), \${$property}->toArray()
             );
         }
-        return \$this->_{$property}Dao->insert(\${$property}->toArray());
+        return \$this->getDao()->insert(\${$property}->toArray());
     }
     
     /**
@@ -440,7 +440,7 @@ class Application_Model_{$name}Mapper
      */
     public function delete()
     {
-        return \$this->_{$property}Dao->delete(\${$property}->getId());
+        return \$this->getDao()->delete(\${$property}->getId());
     }
 }
 MAPPER;
