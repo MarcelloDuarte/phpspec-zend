@@ -213,7 +213,7 @@ class PHPSpec_Context_Zend_Tool_Context_ModelFile
                           '    $setter = "set$attribute";' . PHP_EOL .
                           '    if (method_exists($model, $setter)) {' .
                           PHP_EOL .
-                          '        $model->$setter($attribute, $value);' .
+                          '        $model->$setter($value);' .
                           PHP_EOL .
                           '    }' . PHP_EOL .
                           '}' . PHP_EOL .
