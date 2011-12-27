@@ -123,9 +123,14 @@ class PHPSpec_Context_Zend_Tool_Context_ModelFile
      * @param array $fields 
      * @return string
      */
-    protected function getProperties(array $fields)
+    protected function getProperties(array $fields, $addId = true)
     {
         $properties = array();
+        
+        if ($addId) {
+            $this->addId($fields);
+        }
+        
         foreach ($fields as $field) {
             $varAndType = explode(':', $field);
             list($varname, $type) = count($varAndType) > 1 ?
@@ -149,9 +154,14 @@ class PHPSpec_Context_Zend_Tool_Context_ModelFile
      * @param string $class
      * @return array<Zend_CodeGenerator_Php_Method> 
      */
-    protected function getMethods(array $fields, $class)
+    protected function getMethods(array $fields, $class, $addId = true)
     {
         $methods = array();
+        
+        if ($addId) {
+            $this->addId($fields);
+        }
+        
         $constructorParameter = array();
         $contructorDocblock = "Creates the $class model" . PHP_EOL . PHP_EOL;
         $constructorBody = '';
@@ -298,5 +308,24 @@ class PHPSpec_Context_Zend_Tool_Context_ModelFile
                               "@return $type"
             )
         );
+    }
+    
+    /**
+     * Adds the id field to fields array
+     *
+     * @param array &$fields 
+     * @return void
+     */
+    private function addId(array &$fields)
+    {
+
+        if (!in_array('id:integer', $fields) &&
+            !in_array('id:int', $fields)) {
+                $fields[] = 'id:int';
+            }
+        if ($key = array_search('id', $fields)) {
+            $fields[$key] = 'id:int';
+        }
+
     }
 }
