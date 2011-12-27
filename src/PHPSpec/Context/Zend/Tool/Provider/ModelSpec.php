@@ -321,8 +321,8 @@ class PHPSpec_Context_Zend_Tool_Provider_ModelSpec
             $attributes .= "            '$varname' => 'value for $varname'," .
                            PHP_EOL;
         }
-        $thisSpec = '\$this->spec(' . $name .
-                    '::create(\$this->validAttributes));';
+        $thisSpec = '$this->spec(' . $name .
+                    '::create($this->validAttributes));';
         $modelVariable = LCFirst::apply($name);
         return <<<SPEC
 <?php
