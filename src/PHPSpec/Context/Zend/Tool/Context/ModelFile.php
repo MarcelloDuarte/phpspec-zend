@@ -222,10 +222,14 @@ class PHPSpec_Context_Zend_Tool_Context_ModelFile
                 )),
                 'static' => true,
                 'docblock' => "Creates (as a factory) the model" . PHP_EOL .
-                              PHP_EOL . "@param array \$attributes",
+                              PHP_EOL . "@param array \$attributes",              
                 'body' => '$model = new Application_Model_' . $name . ';' .
                           PHP_EOL .
+                          '$camelize = new Zend_Filter_Word_' .
+                          'UnderscoreToCamelCase;' . PHP_EOL .
                           'foreach ($attributes as $attribute => $value) {' .
+                          PHP_EOL .
+                          '    $attribute = $camelize->filter($attribute);' .
                           PHP_EOL .
                           '    $setter = "set$attribute";' . PHP_EOL .
                           '    if (method_exists($model, $setter)) {' .
