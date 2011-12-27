@@ -23,7 +23,9 @@
 require_once 'PHPSpec/Context/Zend/Filter/UCFirst.php';
 
 use PHPSpec_Context_Zend_Filter_UCFirst as UCFirst,
-    Zend_CodeGenerator_Php_Property as PropertyGenerator;
+    PHPSpec_Context_Zend_Filter_LCFirst as LCFirst,
+    Zend_CodeGenerator_Php_Property as PropertyGenerator,
+    Zend_Filter_Word_UnderscoreToCamelCase as UnderscoreToCamelCase;
 
 /**
  * @category   PHPSpec
@@ -126,6 +128,7 @@ class PHPSpec_Context_Zend_Tool_Context_ModelFile
     protected function getProperties(array $fields, $addId = true)
     {
         $properties = array();
+        $camelCase = new UnderscoreToCamelCase;
         
         if ($addId) {
             $this->addId($fields);
@@ -136,6 +139,7 @@ class PHPSpec_Context_Zend_Tool_Context_ModelFile
             list($varname, $type) = count($varAndType) > 1 ?
                                     $varAndType :
                                     array($varAndType[0], 'mixed');
+            $varname = LCFirst::apply($camelCase->filter($varname));
             $properties[] = new PropertyGenerator(
                 array(
                     'name' => "_$varname",
@@ -157,6 +161,7 @@ class PHPSpec_Context_Zend_Tool_Context_ModelFile
     protected function getMethods(array $fields, $class, $addId = true)
     {
         $methods = array();
+        $camelCase = new UnderscoreToCamelCase;
         
         if ($addId) {
             $this->addId($fields);
@@ -170,6 +175,7 @@ class PHPSpec_Context_Zend_Tool_Context_ModelFile
             list($varname, $type) = count($varAndType) > 1 ?
                                     $varAndType :
                                     array($varAndType[0], 'mixed');
+            $varname = LCFirst::apply($camelCase->filter($varname));
             $methods[] = $this->_generateGetter($varname, $type);
             $methods[] = $this->_generateSetter($varname, $type);
             $constructorParameter[] = new Zend_CodeGenerator_Php_Parameter(
@@ -183,6 +189,7 @@ class PHPSpec_Context_Zend_Tool_Context_ModelFile
         
         $methods[] = $this->_generateFactory($class);
         $methods[] = $this->_generateIsValid();
+        $methods[] = $this->_generateToArray($fields);
         
         if (!empty($constructorParameter)) {
             $constructor = $this->_generateConstructor(
@@ -311,6 +318,40 @@ class PHPSpec_Context_Zend_Tool_Context_ModelFile
     }
     
     /**
+     * Creates a toArray() generator
+     * 
+     * @param array $fields
+     * @return Zend_CodeGenerator_Php_Method
+     */
+    protected function _generateToArray(array $fields)
+    {
+        $camelCase = new UnderscoreToCamelCase;
+        $body = 'return array(' . PHP_EOL;
+        foreach ($fields as $field) {
+            $varAndType = explode(':', $field);
+            list($varname, $type) = count($varAndType) > 1 ?
+                                    $varAndType :
+                                    array($varAndType[0], 'mixed');
+            $key = $varname;
+            $body .= '    \'' . $varname . '\' => $this->_' .
+                     LCFirst::apply($camelCase->filter($varname)) . ',' . PHP_EOL;
+        }
+        if (!empty($fields)) {
+            $body = substr($body, 0, strlen($body) - 2) . PHP_EOL;
+        }
+        $body .= ');';
+        return new Zend_CodeGenerator_Php_Method(
+            array(
+                'name' => "toArray",
+                'body' => $body,
+                'docblock' => "Returns the model serialized as an array" .
+                              PHP_EOL . PHP_EOL .
+                              "@return array"
+            )
+        );
+    }
+    
+    /**
      * Adds the id field to fields array
      *
      * @param array &$fields 
@@ -321,7 +362,7 @@ class PHPSpec_Context_Zend_Tool_Context_ModelFile
 
         if (!in_array('id:integer', $fields) &&
             !in_array('id:int', $fields)) {
-                $fields[] = 'id:int';
+                $fields = array_merge(array('id:int'), $fields);
             }
         if ($key = array_search('id', $fields)) {
             $fields[$key] = 'id:int';
