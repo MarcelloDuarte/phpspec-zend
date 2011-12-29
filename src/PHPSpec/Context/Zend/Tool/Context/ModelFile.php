@@ -222,7 +222,7 @@ class PHPSpec_Context_Zend_Tool_Context_ModelFile
                 )),
                 'static' => true,
                 'docblock' => "Creates (as a factory) the model" . PHP_EOL .
-                              PHP_EOL . "@param array \$attributes",              
+                              PHP_EOL . "@param array \$attributes",
                 'body' => '$model = new Application_Model_' . $name . ';' .
                           PHP_EOL .
                           '$camelize = new Zend_Filter_Word_' .
@@ -338,7 +338,8 @@ class PHPSpec_Context_Zend_Tool_Context_ModelFile
                                     array($varAndType[0], 'mixed');
             $key = $varname;
             $body .= '    \'' . $varname . '\' => $this->_' .
-                     LCFirst::apply($camelCase->filter($varname)) . ',' . PHP_EOL;
+                     LCFirst::apply($camelCase->filter($varname)) . ',' .
+                     PHP_EOL;
         }
         if (!empty($fields)) {
             $body = substr($body, 0, strlen($body) - 2) . PHP_EOL;
@@ -367,7 +368,7 @@ class PHPSpec_Context_Zend_Tool_Context_ModelFile
         if (!in_array('id:integer', $fields) &&
             !in_array('id:int', $fields)) {
                 $fields = array_merge(array('id:int'), $fields);
-            }
+        }
         if ($key = array_search('id', $fields)) {
             $fields[$key] = 'id:int';
         }

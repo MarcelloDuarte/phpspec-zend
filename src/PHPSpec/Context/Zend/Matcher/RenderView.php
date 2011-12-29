@@ -63,7 +63,8 @@ class RenderView implements Matcher
      */
     public function getFailureMessage()
     {
-        return 'expected to render ' . $this->_expected . ', got ' . $this->_actual . ' (using renderView())';
+        return 'expected to render ' . $this->_expected . ', got ' .
+               $this->_actual . ' (using renderView())';
     }
 
     /**
@@ -73,7 +74,8 @@ class RenderView implements Matcher
      */
     public function getNegativeFailureMessage()
     {
-        return 'expected not to render ' . $this->_actual . ', but it was rendered (using renderView())';
+        return 'expected not to render ' . $this->_actual .
+               ', but it was rendered (using renderView())';
     }
 
     /**
