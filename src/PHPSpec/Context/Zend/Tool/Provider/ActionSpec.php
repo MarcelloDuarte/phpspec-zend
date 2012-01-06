@@ -101,7 +101,7 @@ class PHPSpec_Context_Zend_Tool_Provider_ActionSpec
         );
         $basePath = realpath($controllerPath . '/../..');
         $controllerSpecPath = realpath($basePath . '/spec/controllers') .
-                              '/' . $controllerName . 'Spec.php';
+                              '/' . $controllerName . 'ControllerSpec.php';
         $specContent = $this->_getSpecContent($name, $controllerName);
         
         if ($request->isPretend()) {
