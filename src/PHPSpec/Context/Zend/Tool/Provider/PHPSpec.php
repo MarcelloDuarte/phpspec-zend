@@ -41,55 +41,97 @@ class PHPSpec_Context_Zend_Tool_Provider_Phpspec
     {
         $this->_loadProfile(self::NO_PROFILE_THROW_EXCEPTION);
         
-        if (is_dir('spec')) {
-            throw new Zend_Tool_Project_Provider_Exception(
-                'You have already generated PHPSpec\'s necessary files.'
-            );
-        }
-        
         $response = $this->_registry->getResponse();
         
-        $response->appendContent(
-            "      create",
-            array('separator' => false, 'color' => 'green')
-        );
-        $response->appendContent("  spec");
-        mkdir('spec');
+        if (is_dir('spec')) {
+            $response->appendContent(
+                "      exists",
+                array('separator' => false, 'color' => 'yellow')
+            );
+            $response->appendContent("  spec");
+        } else {
+            $response->appendContent(
+                "      create",
+                array('separator' => false, 'color' => 'green')
+            );
+            $response->appendContent("  spec");
+            mkdir('spec');
+        }
         
-        $response->appendContent(
-            "      create",
-            array('separator' => false, 'color' => 'green')
-        );
-        $response->appendContent("  spec/SpecHelper.php");
-        file_put_contents('spec/SpecHelper.php', $this->_getSpecHelperText());
+        if (file_exists('spec/SpecHelper.php')) {
+            $response->appendContent(
+                "      exists",
+                array('separator' => false, 'color' => 'yellow')
+            );
+            $response->appendContent("  spec/SpecHelper.php");
+        } else {
+            $response->appendContent(
+                "      create",
+                array('separator' => false, 'color' => 'green')
+            );
+            $response->appendContent("  spec/SpecHelper.php");
+            file_put_contents('spec/SpecHelper.php', $this->_getSpecHelperText());
+        }
+
+        if (file_exists('spec/.phpspec')) {
+            $response->appendContent(
+                "      exists",
+                array('separator' => false, 'color' => 'yellow')
+            );
+            $response->appendContent("  spec/.phpspec");
+        } else {
+            $response->appendContent(
+                "      create",
+                array('separator' => false, 'color' => 'green')
+            );
+            $response->appendContent("  spec/.phpspec");
+            touch('spec/.phpspec');            
+        }
         
-        $response->appendContent(
-            "      create",
-            array('separator' => false, 'color' => 'green')
-        );
-        $response->appendContent("  spec/.phpspec");
-        touch('spec/.phpspec');
+        if (is_dir('spec/models')) {
+            $response->appendContent(
+                "      exists",
+                array('separator' => false, 'color' => 'yellow')
+            );
+            $response->appendContent("  spec/models");
+        } else {
+            $response->appendContent(
+                "      create",
+                array('separator' => false, 'color' => 'green')
+            );
+            $response->appendContent("  spec/models");
+            mkdir('spec/models');
+        }
+
+        if (is_dir('spec/views')) {
+            $response->appendContent(
+                "      exists",
+                array('separator' => false, 'color' => 'yellow')
+            );
+            $response->appendContent("  spec/views");
+        } else {
+            $response->appendContent(
+                "      create",
+                array('separator' => false, 'color' => 'green')
+            );
+            $response->appendContent("  spec/views");
+            mkdir('spec/views');
+        }
         
-        $response->appendContent(
-            "      create",
-            array('separator' => false, 'color' => 'green')
-        );
-        $response->appendContent("  spec/models");
-        mkdir('spec/models');
-        
-        $response->appendContent(
-            "      create",
-            array('separator' => false, 'color' => 'green')
-        );
-        $response->appendContent("  spec/views");
-        mkdir('spec/views');
-        
-        $response->appendContent(
-            "      create",
-            array('separator' => false, 'color' => 'green')
-        );
-        $response->appendContent("  spec/controllers");
-        mkdir('spec/controllers');
+        if (is_dir('spec/controllers')) {
+            $response->appendContent(
+                "      exists",
+                array('separator' => false, 'color' => 'yellow')
+            );
+            $response->appendContent("  spec/controllers");
+        } else {
+            $response->appendContent(
+                "      create",
+                array('separator' => false, 'color' => 'green')
+            );
+            $response->appendContent("  spec/controllers");
+            mkdir('spec/controllers');
+        }
     }
     
     /**
