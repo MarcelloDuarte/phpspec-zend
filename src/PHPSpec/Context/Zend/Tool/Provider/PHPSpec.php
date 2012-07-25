@@ -173,9 +173,6 @@ Zend_Loader_Autoloader::getInstance();
 );
 \$application->bootstrap();
 
-// require_once 'Yadif/Container.php';
-require_once 'PHPUnit/Autoload.php';
-
 require_once 'Mockery/Loader.php';
 require_once 'Hamcrest/hamcrest.php';
 \$loader = new \Mockery\Loader;
