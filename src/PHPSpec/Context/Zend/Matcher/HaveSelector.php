@@ -21,8 +21,6 @@
  */
 namespace PHPSpec\Context\Zend\Matcher;
 
-require_once 'PHPUnit/Autoload.php';
-
 /**
  * @see \PHPSpec\Matcher
  */

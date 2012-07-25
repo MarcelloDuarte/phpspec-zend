@@ -20,9 +20,6 @@
  * @license   http://www.gnu.org/licenses/lgpl-3.0.txt GNU Lesser General Public Licence Version 3
  */
 namespace PHPSpec\Context\Zend\Matcher;
-
-require_once 'PHPUnit/Autoload.php';
-
 /**
  * @see \PHPSpec\Matcher
  */
