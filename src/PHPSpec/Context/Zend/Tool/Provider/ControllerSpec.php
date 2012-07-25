@@ -116,8 +116,9 @@ class PHPSpec_Context_Zend_Tool_Provider_ControllerSpec
                 $controllerResource->getContext()->getPath()
             );
             foreach ($actions as $action) {
+                $vowel = in_array($action[0], array('a', 'e', 'i', 'o', 'u'));
                 $response->appendContent(
-                    'Would create an ' . $action .
+                    'Would create a' . ($vowel ? 'n' : '') . ' ' . $action .
                     ' action method in controller ' . $name
                 );
             }
@@ -171,13 +172,13 @@ class PHPSpec_Context_Zend_Tool_Provider_ControllerSpec
     }';
         }
         
-        $examples = implode(PHP_EOL . PHP_EOL . '        ', $examples);
+        $examples = implode(PHP_EOL . PHP_EOL . '    ', $examples);
         return <<<CONTENT
 <?php
 
 require_once __DIR__ . '/../SpecHelper.php';
 
-class Describe{$name} extends \PHPSpec\Context\Zend\Controller
+class Describe{$name}Controller extends \PHPSpec\Context\Zend\Controller
 {
     $examples
 }
