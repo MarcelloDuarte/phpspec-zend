@@ -88,24 +88,6 @@ class View extends Context
     }
     
     /**
-     * Added Zend matchers to interceptor before returning it
-     * 
-     * @param mixed
-     * @return \PHPSpec\Specification\Interceptor
-     */
-    public function spec()
-    {
-        $interceptor = call_user_func_array(
-            array(
-                '\PHPSpec\Specification\Interceptor\InterceptorFactory',
-                'create'),
-            func_get_args()
-        );
-        $interceptor->addMatchers(array('contain', 'haveSelector'));
-        return $interceptor;
-    }
-    
-    /**
      * Renders the view
      */
     public function render()
