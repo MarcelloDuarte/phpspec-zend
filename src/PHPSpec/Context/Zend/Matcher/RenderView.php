@@ -53,7 +53,10 @@ class RenderView implements Matcher
      */
     public function matches($view)
     {
-        throw new \PHPSpec\Exception('Pending implementation');
+        throw new \PHPSpec\Exception(
+            'At this stage we haven\'t yet figured out a way to spy the ' .
+            'view inside of Zend_Controller_Action'
+        );
     }
 
     /**
