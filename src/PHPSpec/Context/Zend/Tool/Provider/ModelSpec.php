@@ -428,8 +428,8 @@ class Application_Model_{$name}Mapper
     public function save($name \${$property})
     {
         if (\${$property}->getId()) {
-            return \$this->_{$property}Dao->update(
-                'id=' . (int)\${$property}->getId(), \${$property}->toArray()
+            return \$this->getDao()->update(
+                \${$property}->toArray(), 'id=' . (int)\${$property}->getId()
             );
         }
         return \$this->getDao()->insert(\${$property}->toArray());
@@ -438,9 +438,9 @@ class Application_Model_{$name}Mapper
     /**
      * Deletes the entity from the data source
      */
-    public function delete()
+    public function delete($name \${$property})
     {
-        return \$this->getDao()->delete(\${$property}->getId());
+        return \$this->getDao()->delete('id=' . (int)\${$property}->getId());
     }
 }
 MAPPER;
