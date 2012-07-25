@@ -148,6 +148,8 @@ class PHPSpec_Context_Zend_Tool_Provider_Phpspec
         return <<<HELPER
 <?php
 
+\$configure->includeMatchers("PHPSpec/Context/Zend/Matcher");
+
 // Define path to application directory
 defined('APPLICATION_PATH')
     || define($path);
