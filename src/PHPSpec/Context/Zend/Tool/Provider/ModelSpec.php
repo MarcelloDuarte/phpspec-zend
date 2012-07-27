@@ -470,12 +470,17 @@ MAPPER;
                  } else {
                      $fieldsSQL[] = "{$varname}Id int(11)";
                  }
+                 continue;
              }
              switch ($type) {
                  case 'integer':
                      $fieldsSQL[] = "$varname int(11)";
                      break;
+                 case 'text':
+                     $fieldsSQL[] = "$varname text";
+                     break;
                  case 'string':
+                 default:
                      $fieldsSQL[] = "$varname varchar(255)";
                      break;
              }
