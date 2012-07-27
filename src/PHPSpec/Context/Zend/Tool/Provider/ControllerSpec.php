@@ -132,11 +132,12 @@ class PHPSpec_Context_Zend_Tool_Provider_ControllerSpec
             );
             $controllerResource->create();
             foreach ($actions as $action) {
+                $vowel = in_array($action[0], array('a', 'e', 'i', 'o', 'u'));
                 $actionResource = ActionProvider::createResource(
                     $this->_loadedProfile, $action, $name, $module
                 );
                 $response->appendContent(
-                    'Creating an ' . $action .
+                    'Creating a' . ($vowel ? 'n' : '') . ' ' . $action .
                     ' action method in controller ' . $name
                 );
                 $actionResource->create();

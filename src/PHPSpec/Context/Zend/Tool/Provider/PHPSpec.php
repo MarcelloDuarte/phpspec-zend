@@ -13,7 +13,7 @@
  * to license@phpspec.net so we can send you a copy immediately.
  *
  * @category  PHPSpec
- * @package   PHPSpec
+ * @package   PHPSpec_Zend
  * @copyright Copyright (c) 2007-2009 Pádraic Brady, Travis Swicegood
  * @copyright Copyright (c) 2010-2012 Pádraic Brady, Travis Swicegood,
  *                                    Marcello Duarte
