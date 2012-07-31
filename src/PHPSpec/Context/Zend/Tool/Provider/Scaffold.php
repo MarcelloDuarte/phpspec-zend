@@ -24,6 +24,7 @@ use Zend_Tool_Framework_Provider_Abstract as ProviderAbstract;
 use Zend_Filter_Word_CamelCaseToSeparator as CamelCaseToSeparator;
 use Zend_Filter_Word_CamelCaseToDash as CamelCaseToDash;
 use Zend_Tool_Project_Provider_Controller as ControllerProvider;
+use Zend_Tool_Project_Provider_View as ViewProvider;
 use Zend_Tool_Project_Provider_Exception as ProviderException;
 
 require_once 'PHPSpec/Context/Zend/Filter/LCFirst.php';
@@ -32,15 +33,19 @@ require_once 'PHPSpec/Context/Zend/Filter/Pluralize.php';
 require_once 'PHPSpec/Context/Zend/Tool/Context/Form.php';
 require_once 'PHPSpec/Context/Zend/Tool/Context/ViewContent.php';
 require_once 'PHPSpec/Context/Zend/Tool/Context/ActionMethod.php';
+require_once 'PHPSpec/Context/Zend/Tool/Context/ViewSpec.php';
+require_once 'PHPSpec/Context/Zend/Tool/Context/ControllerSpec.php';
 
 use PHPSpec_Context_Zend_Filter_LCFirst as LCFirst;
 use PHPSpec_Context_Zend_Filter_UCFirst as UCFirst;
 use PHPSpec_Context_Zend_Filter_Pluralize as Pluralize;
 use PHPSpec_Context_Zend_Tool_Context_Form as FormResource;
 use PHPSpec_Context_Zend_Tool_Context_ViewContent as ViewContent;
+use PHPSpec_Context_Zend_Tool_Context_ViewSpec as ViewSpec;
 use PHPSpec_Context_Zend_Tool_Context_ActionMethod as ActionMethod;
 use PHPSpec_Context_Zend_Tool_Provider_ControllerSpec as ControllerSpec;
 use PHPSpec_Context_Zend_Tool_Provider_ModelSpec as ModelSpec;
+use PHPSpec_Context_Zend_Tool_Context_ControllerSpec as ControllerSpecContext;
 
 /**
  * @category   PHPSpec
@@ -78,6 +83,80 @@ class PHPSpec_Context_Zend_Tool_Provider_Scaffold extends ProviderAbstract
         FormResource::create($this->_registry, $profile, $entity, $commaSeparatedFields, $module);
         
         self::_createControllerViewsAndActions($this->_registry, $profile, $entity, $commaSeparatedFields, $module);
+        self::_createViewSpecs($entity, $commaSeparatedFields, $module);
+        self::_createControllerMacros($this->_registry->getResponse());
+        self::_createControllerSpec($entity, $commaSeparatedFields, $module);
+    }
+    
+    protected static function _createControllerSpec($entity, $fields, $module)
+    {
+        $ds = DIRECTORY_SEPARATOR;
+        $module = $module === null ? '' : $module . $ds;
+        $controllerSpecPath = ".{$ds}spec{$ds}{$module}controllers";
+        if (!file_exists($controllerSpecPath)) {
+            mkdir($controllerSpecPath);
+        }
+        
+        ControllerSpecContext::create($controllerSpecPath, $entity, $fields, $module);
+    }
+    
+    protected static function _createViewSpecs($entity, $commaSeparatedFields, $module)
+    {
+        $filter = new CamelCaseToSeparator('-');
+        $pluralize = new Pluralize;
+        $ds = DIRECTORY_SEPARATOR;
+        $module = $module === null ? '' : $module . $ds;
+        $controllerDir = strtolower($pluralize->filter($filter->filter($entity)));
+        
+        $viewSpecPath = ".{$ds}spec{$ds}views{$ds}$module$controllerDir";
+        if (!file_exists($viewSpecPath)) {
+            mkdir($viewSpecPath);
+        }
+        
+        foreach (self::$_scaffoldActions as $view) {
+            ViewSpec::create($viewSpecPath, $entity, $commaSeparatedFields, $view, $module);
+        }
+    }
+    
+    protected static function _createControllerMacros($response)
+    {
+        $ds = DIRECTORY_SEPARATOR;
+        $specDir = ".{$ds}spec{$ds}";
+        if (file_exists("{$specDir}ControllersMacros.php")) {
+            return;
+        }
+        
+        file_put_contents("{$specDir}ControllersMacros.php", <<<MACRO
+<?php
+
+class ControllersMacros extends \PHPSpec\Macro
+{
+    // here you can use your preferred IoC container
+    public function inject(\$alias, \$object)
+    {
+        \$container = Zend_Registry::getInstance();
+        \$container->\$alias = \$object;
+    }
+    
+    // ah, the joy of static containers :~}
+    public function clearContainer()
+    {
+        Zend_Registry::_unsetInstance();
+    }
+}
+MACRO
+);
+        $specHelperPath = "{$specDir}SpecHelper.php";
+        $specHelper = file_get_contents($specHelperPath);
+        $specHelper = str_replace('<?php' . PHP_EOL, '<?php
+
+$configure->includeMacros(__DIR__ . "/ControllersMacros.php");', $specHelper);
+        file_put_contents($specHelperPath, $specHelper);
+
+        $response->appendContent(
+            'Creating a controllers\'s macro file in location ' .
+            realpath (".{$ds}spec{$ds}ControllersMacros.php")
+        );
     }
     
     protected static function _createControllerViewsAndActions($registry, $profile, $entity, $commaSeparatedFields, $module)
@@ -106,12 +185,18 @@ class PHPSpec_Context_Zend_Tool_Provider_Scaffold extends ProviderAbstract
         
         file_put_contents(
                 $controllerPath, str_replace(
-            "<?php\n\nclass",
-            "<?php\n\n" .
-            "use Application_Model_{$entity}Mapper as {$entity}Mapper;\n" .
-            "use Application_Model_{$entity} as {$entity};\n" .
-            "use Application_Form_{$entity}Form as {$entity}Form;\n\n" .
+            "<?php" . PHP_EOL . PHP_EOL . "class",
+            "<?php" . PHP_EOL . PHP_EOL .
+            "use Application_Model_{$entity} as {$entity};" . PHP_EOL . PHP_EOL .
             "class",
+            $controllerContent));
+            
+        $controllerContent = file_get_contents($controllerPath);
+        
+        file_put_contents(
+                $controllerPath, str_replace(
+            PHP_EOL . "}",
+            self::_getContainerHack() . PHP_EOL . "}",
             $controllerContent));
     }
     
@@ -168,5 +253,23 @@ class PHPSpec_Context_Zend_Tool_Provider_Scaffold extends ProviderAbstract
         }
 
         return false;
+    }
+    
+        protected static function _getContainerHack()
+    {
+        return "
+    // please replace the following with a proper IoC container :~)
+    
+    public function get(\$object, \$namespace = 'Application.')
+    {
+        \$container = Zend_Registry::getInstance();
+        if (!isset(\$container[\$namespace . \$object]) ||
+            \$container[\$namespace . \$object] === null) {
+            \$classNameFilter = new \Zend_Filter_Word_SeparatorToSeparator('.', '_');
+            \$className = \$classNameFilter->filter(\$namespace . \$object);
+            \$container[\$namespace . \$object] = new \$className;
+        }
+        return \$container[\$namespace . \$object];
+    }";
     }
 }

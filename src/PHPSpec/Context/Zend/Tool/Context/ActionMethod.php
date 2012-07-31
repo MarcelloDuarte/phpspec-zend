@@ -33,7 +33,7 @@ class PHPSpec_Context_Zend_Tool_Context_ActionMethod
         $lc = $lcFirst->filter($entity);
         $plural = $pluralize->filter($lc);
         
-        return "\${$lc}Mapper = new {$entity}Mapper;
+        return "\${$lc}Mapper = \$this->get('Model.{$entity}Mapper');
         \$this->view->{$plural} = \${$lc}Mapper->fetchAll();";
     }
     
@@ -46,8 +46,8 @@ class PHPSpec_Context_Zend_Tool_Context_ActionMethod
         $plural = $pluralize->filter($lc);
         $lowerDashedPlural = $camelCaseToDash->filter($plural);
         
-        return "\${$lc}Form = new {$entity}Form;
-        \${$lc}Mapper = new {$entity}Mapper;
+        return "\${$lc}Form = \$this->get('Form.{$entity}Form');
+        \${$lc}Mapper = \$this->get('Model.{$entity}Mapper');
         
         if (\$this->_request->isPost()) {
             \$params = \$this->_request->getPost();
@@ -61,7 +61,7 @@ class PHPSpec_Context_Zend_Tool_Context_ActionMethod
     
     protected static function _getNewActionContent($entity)
     {
-        return "\$this->view->form = new {$entity}Form;";
+        return "\$this->view->form = \$this->get('Form.{$entity}Form');";
     }
     
     protected static function _getEditActionContent($entity)
@@ -71,8 +71,8 @@ class PHPSpec_Context_Zend_Tool_Context_ActionMethod
         $lc = $lcFirst->filter($entity);
         $plural = $pluralize->filter($lc);
         
-        return "\${$lc}Mapper = new {$entity}Mapper;
-        \${$lc}Form = new {$entity}Form;
+        return "\${$lc}Mapper = \$this->get('Model.{$entity}Mapper');
+        \${$lc}Form = \$this->get('Form.{$entity}Form');
         
         \${$lc} = \${$lc}Mapper->find(\$this->_request->id);
         
@@ -95,11 +95,11 @@ class PHPSpec_Context_Zend_Tool_Context_ActionMethod
         $plural = $pluralize->filter($lc);
         $lowerDashedPlural = $camelCaseToDash->filter($plural);
         
-        return "\${$lc}Form = new {$entity}Form;
+        return "\${$lc}Form = \$this->get('Form.{$entity}Form');
         
         if (\$this->_request->isPost()) {
             \$params = \$this->_request->getPost();
-            \${$lc}Mapper = new {$entity}Mapper;
+            \${$lc}Mapper = \$this->get('Model.{$entity}Mapper');
             
             if (\${$lc}Form->isValid(\$params)) {
                 \$params['id'] = (int)\$this->_request->id;
@@ -119,7 +119,7 @@ class PHPSpec_Context_Zend_Tool_Context_ActionMethod
         $plural = $pluralize->filter($lc);
         $lowerDashedPlural = $camelCaseToDash->filter($plural);
         
-        return "\${$lc}Mapper = new {$entity}Mapper;
+        return "\${$lc}Mapper = \$this->get('Model.{$entity}Mapper');
         \${$lc} = \${$lc}Mapper->find(\$this->_request->id);
         \${$lc}Mapper->delete(\${$lc});
         \$this->_redirect('/{$lowerDashedPlural}');";
@@ -130,7 +130,7 @@ class PHPSpec_Context_Zend_Tool_Context_ActionMethod
         $lcFirst = new LCFirst;
         $lc = $lcFirst->filter($entity);
         
-        return "\${$lc}Mapper = new {$entity}Mapper;
+        return "\${$lc}Mapper = \$this->get('Model.{$entity}Mapper');
         \$this->view->{$lc} = \${$lc}Mapper->find(\$this->_request->id);";
     }
 }
