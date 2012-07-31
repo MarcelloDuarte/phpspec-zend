@@ -1,0 +1,51 @@
+
+use PHPSpec\Context\Zend\Spy\View as SpyView;
+
+class {spyController} extends {userController}
+{
+    protected $observers = array();
+    
+    public function __construct(Zend_Controller_Request_Abstract $request, Zend_Controller_Response_Abstract $response, array $invokeArgs = array())
+    {
+        parent::__construct($request, $response, $invokeArgs);
+        $this->_helper->viewRenderer->setNoRender(true);
+    }
+    
+    public function attach($observer)
+    {
+        $this->observers[] = $observer;
+    }
+    
+    public function initView()
+    {
+        $this->view = new SpyView;
+    }
+    
+    public function render($action = null, $name = null, $noController = false)
+    {
+        $spyData = array(
+            'method' => 'render',
+            'action' => $action,
+            'name' => $name,
+            'noController' => $noController
+        );
+        $this->notify($spyData);
+    }
+    
+    public function renderScript($script, $name = null)
+    {
+        $spyData = array(
+            'method' => 'renderScript',
+            'script' => $script,
+            'name' => $name
+        );
+        $this->notify($spyData);
+    }
+    
+    protected function notify($spyData)
+    {
+        foreach($this->observers as $observer) {
+            $observer->update($spyData);
+        }
+    }
+}

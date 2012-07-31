@@ -163,17 +163,39 @@ class Controller extends Context
                 'You must send a request before using assigns'
             );
         }
+        
         $bootstrap = $this->frontController
-                          ->getActualValue()->getParam('bootstrap');
+                          ->getActualValue()
+                          ->getParam('bootstrap');
+        
         try {
             $bootstrap->bootstrap('view');
         } catch (\Zend_Application_Bootstrap_Exception $e) {
             $view = new \Zend_View;
         }
+        
         $view = $bootstrap->getResource('view');
+        
         if (!isset($view->$variable)) {
+            
+            $cwd = getcwd();
+            $configFile = $cwd . DIRECTORY_SEPARATOR . 'application' .
+                                 DIRECTORY_SEPARATOR . 'configs' .
+                                 DIRECTORY_SEPARATOR . 'application.ini';
+            $addedWarning = '';
+            
+            if (file_exists($configFile)) {
+                $config = file_get_contents($configFile);
+                if (!preg_match('/\n\s*(resources)\.(view)/', $config)) {
+                    $addedWarning = 'Try initializing the view ' .
+                                    'by adding, or uncommenting, this line ' .
+                                    'into application.ini:'
+                                    . PHP_EOL . '  resources.view[] =';
+                }
+            }
+            
             throw new \PHPSpec\Specification\Result\Failure(
-                "$variable is not assigned"
+                "$variable is not assigned. " . $addedWarning
             );
         }
         return $this->spec($view->$variable);
@@ -187,6 +209,12 @@ class Controller extends Context
     protected function _dispatch($url = null)
     {
         $zendTest = $this->_getZendTest();
+        $frontController = $zendTest->getFrontController();
+        $dispatcher = new \PHPSpec\Context\Zend\Dispatcher;
+        $dispatcher->setControllerDirectory($frontController->getControllerDirectory());
+        
+        $zendTest->getFrontController()->setDispatcher($dispatcher);
+
         $zendTest->dispatch($url);
         $this->module = $this->spec($zendTest->request->getModuleName());
         $this->controller = $this->spec(
