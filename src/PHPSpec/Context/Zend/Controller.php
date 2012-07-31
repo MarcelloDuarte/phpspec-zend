@@ -21,8 +21,9 @@
  */
 namespace PHPSpec\Context\Zend;
 
-use \PHPSpec\Context,
-    \PHPSpec\Context\Zend\ZendTest;
+use PHPSpec\Context;
+use PHPSpec\Context\Zend\ZendTest;
+use PHPSpec\Context\Zend\Spy\Observer;
 
 /**
  * @category   PHPSpec
@@ -32,7 +33,7 @@ use \PHPSpec\Context,
  *                                     Marcello Duarte
  * @license    http://www.gnu.org/licenses/lgpl-3.0.txt GNU Lesser General Public Licence Version 3
  */
-class Controller extends Context
+class Controller extends Context implements Observer
 {
     
     /**
@@ -64,12 +65,23 @@ class Controller extends Context
     public $action;
     
     /**
+     * The assigned view variables in the current request
+     *
+     * @var string
+     */
+    protected $_assigned = array();
+    
+    /**
      * Front controller
      *
      * @var Zend_Controller_Front
      */
     public $frontController;
     
+    /**
+     * The before hook
+     *
+     */
     public function before()
     {
         $this->reset();
@@ -164,41 +176,12 @@ class Controller extends Context
             );
         }
         
-        $bootstrap = $this->frontController
-                          ->getActualValue()
-                          ->getParam('bootstrap');
-        
-        try {
-            $bootstrap->bootstrap('view');
-        } catch (\Zend_Application_Bootstrap_Exception $e) {
-            $view = new \Zend_View;
-        }
-        
-        $view = $bootstrap->getResource('view');
-        
-        if (!isset($view->$variable)) {
-            
-            $cwd = getcwd();
-            $configFile = $cwd . DIRECTORY_SEPARATOR . 'application' .
-                                 DIRECTORY_SEPARATOR . 'configs' .
-                                 DIRECTORY_SEPARATOR . 'application.ini';
-            $addedWarning = '';
-            
-            if (file_exists($configFile)) {
-                $config = file_get_contents($configFile);
-                if (!preg_match('/\n\s*(resources)\.(view)/', $config)) {
-                    $addedWarning = 'Try initializing the view ' .
-                                    'by adding, or uncommenting, this line ' .
-                                    'into application.ini:'
-                                    . PHP_EOL . '  resources.view[] =';
-                }
-            }
-            
+        if (!array_key_exists($variable, $this->_assigned)) {
             throw new \PHPSpec\Specification\Result\Failure(
-                "$variable is not assigned. " . $addedWarning
+                "$variable is not assigned. "
             );
         }
-        return $this->spec($view->$variable);
+        return $this->spec($this->_assigned[$variable]);
     }
     
     /**
@@ -212,6 +195,7 @@ class Controller extends Context
         $frontController = $zendTest->getFrontController();
         $dispatcher = new \PHPSpec\Context\Zend\Dispatcher;
         $dispatcher->setControllerDirectory($frontController->getControllerDirectory());
+        $dispatcher->attach($this);
         
         $zendTest->getFrontController()->setDispatcher($dispatcher);
 
@@ -252,5 +236,21 @@ class Controller extends Context
         $this->response = null;
         $this->request = null;
         $this->frontController = null;
+        $this->_assigned = array();
+    }
+    
+    public function update($event)
+    {
+        switch ($event['method']) {
+            case 'render':
+                break;
+            case 'renderScript':
+                break;
+            case 'renderView':
+                break;
+            case 'assign':
+                $this->_assigned[$event['viewVariable']] = $event['value'];
+                break;
+        }
     }
 }

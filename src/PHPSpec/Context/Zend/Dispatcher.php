@@ -11,6 +11,7 @@ use Zend_Controller_Action as ActionController;
 class Dispatcher extends StandardDispatcher
 {
     protected $_currentController;
+    protected $_observers = array();
     
     public function dispatch(Request $request, Response $response)
     {
@@ -103,6 +104,10 @@ class Dispatcher extends StandardDispatcher
         
         $this->_currentController = new $spyControllerName($request, $this->getResponse(), $this->getParams());
         
+        foreach ($this->_observers as $observer) {
+            $this->_currentController->attach($observer);
+        }
+        
         if (!$this->_currentController instanceof ActionController) {
             require_once 'Zend/Controller/Dispatcher/Exception.php';
             throw new DispatcherException(
@@ -110,6 +115,11 @@ class Dispatcher extends StandardDispatcher
             );
         }
         return $this->_currentController;
+    }
+    
+    public function attach($observer)
+    {
+        $this->_observers[] = $observer;
     }
     
     public function getCurrentController()

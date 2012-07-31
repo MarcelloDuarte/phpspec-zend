@@ -1,24 +1,23 @@
 
 use PHPSpec\Context\Zend\Spy\View as SpyView;
+use PHPSpec\Context\Zend\Spy\Observer;
+use PHPSpec\Context\Zend\Spy\Subject;
 
-class {spyController} extends {userController}
+class {spyController} extends {userController} implements Subject
 {
     protected $observers = array();
     
     public function __construct(Zend_Controller_Request_Abstract $request, Zend_Controller_Response_Abstract $response, array $invokeArgs = array())
     {
         parent::__construct($request, $response, $invokeArgs);
+        $this->view = new SpyView;
         $this->_helper->viewRenderer->setNoRender(true);
     }
     
-    public function attach($observer)
+    public function attach(Observer $observer)
     {
         $this->observers[] = $observer;
-    }
-    
-    public function initView()
-    {
-        $this->view = new SpyView;
+        $this->view->attach($observer);
     }
     
     public function render($action = null, $name = null, $noController = false)
@@ -42,7 +41,7 @@ class {spyController} extends {userController}
         $this->notify($spyData);
     }
     
-    protected function notify($spyData)
+    public function notify($spyData)
     {
         foreach($this->observers as $observer) {
             $observer->update($spyData);
