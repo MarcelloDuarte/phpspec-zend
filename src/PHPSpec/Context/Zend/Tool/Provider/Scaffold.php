@@ -24,6 +24,7 @@ use Zend_Tool_Framework_Provider_Abstract as ProviderAbstract;
 use Zend_Filter_Word_CamelCaseToSeparator as CamelCaseToSeparator;
 use Zend_Filter_Word_CamelCaseToDash as CamelCaseToDash;
 use Zend_Tool_Project_Provider_Controller as ControllerProvider;
+use Zend_Tool_Project_Provider_Exception as ProviderException;
 
 require_once 'PHPSpec/Context/Zend/Filter/LCFirst.php';
 require_once 'PHPSpec/Context/Zend/Filter/UCFirst.php';
@@ -38,6 +39,8 @@ use PHPSpec_Context_Zend_Filter_Pluralize as Pluralize;
 use PHPSpec_Context_Zend_Tool_Context_Form as FormResource;
 use PHPSpec_Context_Zend_Tool_Context_ViewContent as ViewContent;
 use PHPSpec_Context_Zend_Tool_Context_ActionMethod as ActionMethod;
+use PHPSpec_Context_Zend_Tool_Provider_ControllerSpec as ControllerSpec;
+use PHPSpec_Context_Zend_Tool_Provider_ModelSpec as ModelSpec;
 
 /**
  * @category   PHPSpec
@@ -60,19 +63,18 @@ class PHPSpec_Context_Zend_Tool_Provider_Scaffold extends ProviderAbstract
      */
     public function generate($entity, $commaSeparatedFields = '', $module = null)
     {
-        $controller = new PHPSpec_Context_Zend_Tool_Provider_ControllerSpec;
-        $model = new PHPSpec_Context_Zend_Tool_Provider_ModelSpec;
+        $controller = new ControllerSpec;
+        $model = new ModelSpec;
         $pluralize = new Pluralize;
         
         $controller->setRegistry($this->_registry);
         $model->setRegistry($this->_registry);
+        $profile = $this->_loadProfile();
         
         $entityPlural = $pluralize->filter($entity);
         
-        $profile = $this->_loadProfile();
-        
         $model->create($entity, $commaSeparatedFields);
-        $controller->create($entityPlural, 'index,add,new,edit,update,delete,show', $module);
+        $controller->create($entityPlural, implode(',', self::$_scaffoldActions), $module);
         FormResource::create($this->_registry, $profile, $entity, $commaSeparatedFields, $module);
         
         self::_createControllerViewsAndActions($this->_registry, $profile, $entity, $commaSeparatedFields, $module);
@@ -119,7 +121,7 @@ class PHPSpec_Context_Zend_Tool_Provider_Scaffold extends ProviderAbstract
 
         if ($foundPath == false) {
             if ($loadProfileFlag == self::NO_PROFILE_THROW_EXCEPTION) {
-                throw new Zend_Tool_Project_Provider_Exception('A project profile was not found.');
+                throw new ProviderException('A project profile was not found.');
             } else {
                 return false;
             }
