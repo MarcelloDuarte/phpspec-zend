@@ -24,6 +24,7 @@ namespace PHPSpec\Context\Zend;
 use PHPSpec\Context;
 use PHPSpec\Context\Zend\ZendTest;
 use PHPSpec\Context\Zend\Spy\Observer;
+use \PHPSpec\Context\Zend\Dispatcher;
 
 /**
  * @category   PHPSpec
@@ -193,7 +194,7 @@ class Controller extends Context implements Observer
     {
         $zendTest = $this->_getZendTest();
         $frontController = $zendTest->getFrontController();
-        $dispatcher = new \PHPSpec\Context\Zend\Dispatcher;
+        $dispatcher = new Dispatcher;
         $dispatcher->setControllerDirectory(
             $frontController->getControllerDirectory()
         );
@@ -202,6 +203,8 @@ class Controller extends Context implements Observer
         $zendTest->getFrontController()->setDispatcher($dispatcher);
 
         $zendTest->dispatch($url);
+        $this->_handleErrors($zendTest->request);
+        
         $this->module = $this->spec($zendTest->request->getModuleName());
         $this->controller = $this->spec(
             $zendTest->request->getControllerName()
@@ -210,6 +213,24 @@ class Controller extends Context implements Observer
         $this->response = $this->spec($zendTest->response);
         $this->request = $this->spec($zendTest->request);
         $this->frontController = $this->spec($zendTest->getFrontController());
+    }
+    
+    /**
+     * Handles ZF errors
+     *
+     * @param \PHPSpec\Context\Zend\ZendTest $zendTest
+     */
+    protected function _handleErrors($request)
+    {
+        $params = $request->getParams();
+        
+        if (empty($params['error_handler'])) {
+            return;
+        }
+        
+        foreach ($params['error_handler'] as $e) {
+            throw $e;
+        }
     }
     
     /**
@@ -227,8 +248,6 @@ class Controller extends Context implements Observer
     
     /**
      * Resets MVC for a new fresh request
-     *
-     * @return void
      */
     public function reset()
     {
