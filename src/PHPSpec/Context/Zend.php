@@ -135,25 +135,6 @@ class Zend extends Context
     }
     
     /**
-     * Intercepts any value
-     *
-     * @return \PHPSpec\Specification\Interceptor
-     */
-    public function spec()
-    {
-        $interceptor = call_user_func_array(
-            array(
-                '\PHPSpec\Specification\Interceptor\InterceptorFactory',
-                'create'),
-            func_get_args()
-        );
-        $interceptor->addMatchers(
-            array('redirect', 'redirectTo', 'beSuccess')
-        );
-        return $interceptor;
-    }
-    
-    /**
      * Proxies the dispatch to zend test and fetch module, controller, action,
      * response and request
      *
