@@ -54,11 +54,11 @@ class HaveSelector implements Matcher
     protected $_conditions = array();
     
     /**
-     * Whether the selector has attribute filters
+     * Whether we are checking if node is empty
      *
      * @var boolean
      */
-    protected $_hasContentCondition = false;
+    protected $_hasTextCondition = false;
     
     /**
      * Creates the matcher
@@ -100,7 +100,7 @@ class HaveSelector implements Matcher
         if ($this->hasConditions()) {
             $this->buildSelector($content);
             
-            if ($this->hasContentCondition()) {
+            if ($this->hasTextCondition()) {
                 return $this->matchesContent($content);
             }
         }
@@ -118,6 +118,7 @@ class HaveSelector implements Matcher
     {
         $domQuery = new DomQuery($content);
         $result = $domQuery->query($this->_expected);
+        
         return (0 < count($result));
     }
     
@@ -142,8 +143,8 @@ class HaveSelector implements Matcher
     {
         $selector = $this->_expected;
         foreach ($this->_conditions as $condition => $value) {
-            if ($condition == 'content') {
-                $this->_hasContentCondition = true;
+            if ($condition == 'text') {
+                $this->_hasTextCondition = true;
                 continue;
             }
             $selector .= "[$condition=\"$value\"]";
@@ -152,13 +153,13 @@ class HaveSelector implements Matcher
     }
     
     /**
-     * Gets the flag the tells whether the selector has attribute filters
+     * Gets the flag the tells whether we are testing if node is empty
      *
      * @return boolean
      */
-    protected function hasContentCondition()
+    protected function hasTextCondition()
     {
-        return $this->_hasContentCondition;
+        return $this->_hasTextCondition;
     }
     
     /**
@@ -170,8 +171,8 @@ class HaveSelector implements Matcher
     private function matchesContent($content)
     {
         foreach ($this->_conditions as $condition => $value) {
-            if ($condition == 'content') {
-                if ($this->contentIsNotPresent($content, $value)) {
+            if ($condition == 'text') {
+                if ($this->textIsNotPresent($content, $value)) {
                     return false;
                 }
             }
@@ -180,13 +181,13 @@ class HaveSelector implements Matcher
     }
     
     /**
-     * Checks whether the content is empty
+     * Checks whether the node is empty
      *
      * @param string $content
      * @param string $value
      * @return boolean
      */
-    private function contentIsNotPresent($content, $value)
+    private function textIsNotPresent($content, $value)
     {
         $domQuery = new DomQuery($content);
         $result = $domQuery->query($this->_expected);
