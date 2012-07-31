@@ -194,7 +194,9 @@ class Controller extends Context implements Observer
         $zendTest = $this->_getZendTest();
         $frontController = $zendTest->getFrontController();
         $dispatcher = new \PHPSpec\Context\Zend\Dispatcher;
-        $dispatcher->setControllerDirectory($frontController->getControllerDirectory());
+        $dispatcher->setControllerDirectory(
+            $frontController->getControllerDirectory()
+        );
         $dispatcher->attach($this);
         
         $zendTest->getFrontController()->setDispatcher($dispatcher);
@@ -239,6 +241,11 @@ class Controller extends Context implements Observer
         $this->_assigned = array();
     }
     
+    /**
+     * Updates the observer
+     *
+     * @param array $event 
+     */
     public function update($event)
     {
         switch ($event['method']) {
