@@ -53,6 +53,16 @@ class {spyController} extends {userController} implements Subject
         $this->notify($spyData);
     }
     
+    public function _redirect($url, array $options = array())
+    {
+        $spyData = array(
+            'method' => 'redirect',
+            'url' => $url,
+            'options' => $options
+        );
+        $this->notify($spyData);
+    }
+    
     public function notify($spyData)
     {
         foreach($this->observers as $observer) {

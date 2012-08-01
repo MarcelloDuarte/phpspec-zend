@@ -288,6 +288,10 @@ class Controller extends Context implements Observer
             case 'assign':
                 $this->_assigned[$event['viewVariable']] = $event['value'];
                 break;
+            case 'redirect':
+                $this->response = $this->spec($this->_getZendTest()->getFrontController()->getResponse());
+                $this->response->getActualValue()->setRedirect($event['url']);
+                break;
         }
     }
     
