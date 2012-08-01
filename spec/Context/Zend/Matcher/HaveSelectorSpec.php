@@ -37,12 +37,12 @@ class DescribeHaveSelector extends \PHPSpec\Context
         $haveDivSelector->matches($markupWithDiv)->should->beTrue();
     }
     
-    function itUsesContentAttributeForInnerHtml()
+    function itUsesTextAttributeForInnerHtml()
     {
         $markupWithDiv = '<html><div>foo</div></html>';
         $divSelector = 'div';
         $haveDivSelector = $this->spec(new HaveSelector($divSelector, array(
-            'content' => 'foo'
+            'text' => 'foo'
         )));
         $haveDivSelector->matches($markupWithDiv)->should->beTrue();
     }
