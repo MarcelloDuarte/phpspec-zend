@@ -2,13 +2,13 @@
 
 namespace PHPSpec\Context\Zend\Spy;
 
-class View implements Subject
+class View implements Subject, \Zend_View_Interface
 {
     protected $_observers = array();
     
     public function render($name) {
         $this->notify(array(
-            'method' => 'render',
+            'method' => 'renderView',
             'name' => $name
         ));
     }
@@ -33,4 +33,15 @@ class View implements Subject
             'value' => $value
         ));
     }
+    public function getEngine(){}
+    public function setScriptPath($path){}
+    public function getScriptPaths(){
+        return array();
+    }
+    public function setBasePath($path, $classPrefix = 'Zend_View'){}
+    public function addBasePath($path, $classPrefix = 'Zend_View'){}
+    public function __isset($key){}
+    public function __unset($key){}
+    public function assign($spec, $value = null){}
+    public function clearVars(){}
 }

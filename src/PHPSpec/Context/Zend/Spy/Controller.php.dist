@@ -3,6 +3,9 @@ use PHPSpec\Context\Zend\Spy\View as SpyView;
 use PHPSpec\Context\Zend\Spy\Observer;
 use PHPSpec\Context\Zend\Spy\Subject;
 
+use \Zend_Controller_Action_HelperBroker as HelperBroker;
+use \Zend_Controller_Action_Helper_ViewRenderer as ViewRenderer;
+
 class {spyController} extends {userController} implements Subject
 {
     protected $observers = array();
@@ -10,8 +13,17 @@ class {spyController} extends {userController} implements Subject
     public function __construct(Zend_Controller_Request_Abstract $request, Zend_Controller_Response_Abstract $response, array $invokeArgs = array())
     {
         parent::__construct($request, $response, $invokeArgs);
+        $helper = $this->_helper;
+        $helper::resetHelpers();
+        $viewRenderer = new ViewRenderer($this->initView());
+        $viewRenderer->setActionController($this);
+        $helper::addHelper($viewRenderer);
+    }
+    
+    public function initView()
+    {
         $this->view = new SpyView;
-        $this->_helper->viewRenderer->setNoRender(true);
+        return $this->view;
     }
     
     public function attach(Observer $observer)

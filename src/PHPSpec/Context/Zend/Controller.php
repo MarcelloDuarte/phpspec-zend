@@ -73,6 +73,13 @@ class Controller extends Context implements Observer
     protected $_assigned = array();
     
     /**
+     * Rendered views
+     *
+     * @var string
+     */
+    protected $_rendered = array();
+    
+    /**
      * Front controller
      *
      * @var Zend_Controller_Front
@@ -227,7 +234,7 @@ class Controller extends Context implements Observer
         if (empty($params['error_handler'])) {
             return;
         }
-        
+                
         foreach ($params['error_handler'] as $e) {
             throw $e;
         }
@@ -258,6 +265,7 @@ class Controller extends Context implements Observer
         $this->request = null;
         $this->frontController = null;
         $this->_assigned = array();
+        $this->_rendered = array();
     }
     
     /**
@@ -269,14 +277,39 @@ class Controller extends Context implements Observer
     {
         switch ($event['method']) {
             case 'render':
+                $this->_rendered[] = str_replace('.phtml', '', $event['action']);
                 break;
             case 'renderScript':
+                $this->_rendered[] = str_replace('.phtml', '', $event['script']);
                 break;
             case 'renderView':
+                $this->_rendered[] = str_replace('.phtml', '', $event['name']);
                 break;
             case 'assign':
                 $this->_assigned[$event['viewVariable']] = $event['value'];
                 break;
         }
+    }
+    
+    public function __get($property)
+    {
+        if ($property === 'should') {
+            return $this->spec($this)->should;
+        }
+        if ($property === 'shouldNot') {
+            return $this->spec($this)->shouldNot;
+        }
+        $class = get_class($this);
+        trigger_error("Undefined property: $class::\$$property");
+    }
+    
+    public function hasRenderedView($view)
+    {
+        return in_array($view, $this->_rendered);
+    }
+    
+    public function getRenderedViews()
+    {
+        return $this->_rendered;
     }
 }

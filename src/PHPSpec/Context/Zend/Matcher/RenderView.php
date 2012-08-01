@@ -36,13 +36,16 @@ use \PHPSpec\Matcher;
  */
 class RenderView implements Matcher
 {
+    protected $_expected;
+    protected $_renderedView;
+    
     /**
      * 
      * @param string $expected
      */
-    public function __construct($expected)
+    public function __construct($view)
     {
-        $this->_expected = $expected;
+        $this->_expected = $view;
     }
 
     /**
@@ -51,12 +54,13 @@ class RenderView implements Matcher
      * @param string $view
      * @return boolean
      */
-    public function matches($view)
+    public function matches($controller)
     {
-        throw new \PHPSpec\Exception(
-            'At this stage we haven\'t yet figured out a way to spy the ' .
-            'view inside of Zend_Controller_Action'
-        );
+        $this->_actual = implode($controller->getRenderedViews());
+        $this->_actual = trim($this->_actual) === '' ?
+                         'no view rendered' :
+                         $this->_actual;
+        return $controller->hasRenderedView($this->_expected);
     }
 
     /**
