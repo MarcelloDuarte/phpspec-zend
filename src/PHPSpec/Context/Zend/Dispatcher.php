@@ -110,7 +110,7 @@ class Dispatcher extends StandardDispatcher
 
         try {
             $controller->dispatch($action);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             // Clean output buffer on error
             $curObLevel = ob_get_level();
             if ($curObLevel > $obLevel) {
@@ -126,9 +126,6 @@ class Dispatcher extends StandardDispatcher
             $content = ob_get_clean();
             $response->appendBody($content);
         }
-
-        // Destroy the page controller instance and reflection objects
-        $controller = null;
     }
     
     /**
