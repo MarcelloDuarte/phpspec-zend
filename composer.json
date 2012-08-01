@@ -1,0 +1,20 @@
+{
+    "name": "phpspec/phpspec-zend",
+    "description": "PHPSpec Zend Context and Zend Tool providers",
+    "keywords": ["bdd", "spec", "test", "zf", "zend framework", "phpspec"],
+    "homepage": "http://phpspec.net",
+    "license": "LGPL",
+    "authors": [
+        {
+            "name": "PHPSpec Team",
+            "homepage": "https://github.com/phpspec/phpspec-zend/contributors"
+        }
+    ],
+    "autoload": {
+        "psr-0": { "PHPSpec\\": "src/" }
+    },
+    "require": {
+        "php": ">=5.3.2",
+        "phpspec/phpspec": "1.4.0"
+    }
+}
