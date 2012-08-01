@@ -107,7 +107,7 @@ class PHPSpec_Context_Zend_Tool_Context_ActionMethod
                 \$this->_redirect('/{$lowerDashedPlural}/show/id/' . (int)\$this->_request->id);
             }
         }
-        \$this->view->form = \$postForm;";
+        \$this->view->form = \${$lc}Form;";
     }
     
     protected static function _getDeleteActionContent($entity)
