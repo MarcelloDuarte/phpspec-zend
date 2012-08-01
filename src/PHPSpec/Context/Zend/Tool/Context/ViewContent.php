@@ -1,5 +1,24 @@
 <?php
-
+/**
+ * PHPSpec
+ *
+ * LICENSE
+ *
+ * This file is subject to the GNU Lesser General Public License Version 3
+ * that is bundled with this package in the file LICENSE.
+ * It is also available through the world-wide-web at this URL:
+ * http://www.gnu.org/licenses/lgpl-3.0.txt
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@phpspec.net so we can send you a copy immediately.
+ *
+ * @category  PHPSpec
+ * @package   PHPSpec
+ * @copyright Copyright (c) 2007-2009 Pádraic Brady, Travis Swicegood
+ * @copyright Copyright (c) 2010-2012 Pádraic Brady, Travis Swicegood,
+ *                                    Marcello Duarte
+ * @license   http://www.gnu.org/licenses/lgpl-3.0.txt GNU Lesser General Public Licence Version 3
+ */
 require_once 'PHPSpec/Context/Zend/Filter/LCFirst.php';
 require_once 'PHPSpec/Context/Zend/Filter/UCFirst.php';
 require_once 'PHPSpec/Context/Zend/Filter/Pluralize.php';
@@ -11,12 +30,34 @@ use PHPSpec_Context_Zend_Filter_UCFirst as UCFirst;
 use PHPSpec_Context_Zend_Filter_Pluralize as Pluralize;
 
 use Zend_Tool_Project_Provider_View as ViewProvider;
+use Zend_Tool_Framework_Registry as Registry;
+use Zend_Tool_Project_Profile as Profile;
+
 use Zend_Filter_Word_CamelCaseToSeparator as CamelCaseToSeparator;
 use Zend_Filter_Word_CamelCaseToDash as CamelCaseToDash;
 
+/**
+ * @category   PHPSpec
+ * @package    PHPSpec_Zend
+ * @copyright  Copyright (c) 2007-2009 Pádraic Brady, Travis Swicegood
+ * @copyright  Copyright (c) 2010-2012 Pádraic Brady, Travis Swicegood,
+ *                                     Marcello Duarte
+ * @license    http://www.gnu.org/licenses/lgpl-3.0.txt GNU Lesser General Public Licence Version 3
+ */
 class PHPSpec_Context_Zend_Tool_Context_ViewContent
 {
-    public static function create($registry, $profile, $name, $entity, $commaSeparatedFields, $module)
+    /**
+     * Updates views with scaffolded context
+     *
+     * @param Registry $registry
+     * @param Profile  $profile
+     * @param string   $name
+     * @param string   $entity
+     * @param string   $commaSeparatedFields
+     * @param string   $module
+     */
+    public static function create(Registry $registry, Profile $profile,
+        $name, $entity, $commaSeparatedFields, $module)
     {
         $view = new ViewSpecProvider;
         $pluralize = new Pluralize;
@@ -27,23 +68,42 @@ class PHPSpec_Context_Zend_Tool_Context_ViewContent
         $view->setRegistry($registry);
         
         $view->create($name, $entityPlural);
-        $viewResource = ViewProvider::createResource($profile, $name, $entityPlural, $module);
+        $viewResource = ViewProvider::createResource(
+            $profile, $name, $entityPlural, $module
+        );
         $path = $viewResource->getContext()->getPath();
         $getViewContentMethod = "_get{$name}ViewContent";
         file_put_contents(
             $path,
-            self::$getViewContentMethod($entity, self::_explodeFields($commaSeparatedFields))
+            self::$getViewContentMethod(
+                $entity, self::_explodeFields($commaSeparatedFields)
+            )
         );
     }
     
+    /**
+     * Explodes the fields removing the field type
+     *
+     * @param string $fields 
+     * @return array
+     */
     private static function _explodeFields($fields)
     {
         $fields = explode(',', $fields);
-        return array_map(function($each){
-            return substr($each, 0, strpos($each, ':'));
-        }, $fields);
+        return array_map(
+            function($each){
+                return substr($each, 0, strpos($each, ':'));
+            }, $fields
+        );
     }
     
+    /**
+     * Gets the content of scaffolded index view
+     *
+     * @param string $entity 
+     * @param array $fields 
+     * @return string
+     */
     protected static function _getIndexViewContent($entity, $fields)
     {
         $upperFirst = new UCFirst;
@@ -55,7 +115,9 @@ class PHPSpec_Context_Zend_Tool_Context_ViewContent
         $entityLowerCase = $lowerFirst->filter($entity);
         $entityPlural = $upperFirst->filter($pluralize->filter($entity));
         $entityLowerCasePlural = $lowerFirst->filter($entityPlural);
-        $entityLowerCasePluralDashed = $camelCaseToDash->filter($entityLowerCasePlural);
+        $entityLowerCasePluralDashed = $camelCaseToDash->filter(
+            $entityLowerCasePlural
+        );
         
         $columns = $content = '';
         foreach ($fields as $field) {
@@ -63,7 +125,9 @@ class PHPSpec_Context_Zend_Tool_Context_ViewContent
             $lcFirst = $lowerFirst->filter($field);
             $field = $camelCaseToSpace->filter($ucFirst);
             $columns .= PHP_EOL . "    <th>" . $field . "</th>";
-            $content .= PHP_EOL . "    <td><?php echo \$this->escape(\${$entityLowerCase}->get{$ucFirst}()) ?></td>";
+            $content .= PHP_EOL . "    <td>" .
+                        "<?php echo \$this->escape(\${$entityLowerCase}" .
+                        "->get{$ucFirst}()) ?></td>";
         }
         $columns = substr($columns, 5);
         $content = substr($content, 5);
@@ -81,16 +145,30 @@ class PHPSpec_Context_Zend_Tool_Context_ViewContent
 <?php foreach (\$this->{$entityLowerCasePlural} as \${$entityLowerCase}) : ?>
   <tr>
     $content
-    <td><a href=\"<?php echo \$this->baseUrl('/{$entityLowerCasePluralDashed}/show/id/' . \${$entityLowerCase}->getId()) ?>\">Show</a></td>
-    <td><a href=\"<?php echo \$this->baseUrl('/{$entityLowerCasePluralDashed}/edit/id/' . \${$entityLowerCase}->getId()) ?>\">Edit</a></td>
-    <td><a href=\"<?php echo \$this->baseUrl('/{$entityLowerCasePluralDashed}/delete/id/' . \${$entityLowerCase}->getId()) ?>\">Delete</a></td>
+    <td><a href=\"<?php echo \$this->baseUrl(" .
+        "'/{$entityLowerCasePluralDashed}/show/id/' ." .
+        " \${$entityLowerCase}->getId()) ?>\">Show</a></td>
+    <td><a href=\"<?php echo \$this->baseUrl(" .
+        "'/{$entityLowerCasePluralDashed}/edit/id/' ." .
+        " \${$entityLowerCase}->getId()) ?>\">Edit</a></td>
+    <td><a href=\"<?php echo \$this->baseUrl(" .
+        "'/{$entityLowerCasePluralDashed}/delete/id/' ." .
+        " \${$entityLowerCase}->getId()) ?>\">Delete</a></td>
   <tr>
 <?php endforeach ?>
 </table>
 
-<a href=\"<?php echo \$this->baseUrl('{$entityLowerCasePluralDashed}/new') ?>\">New {$entity}</a>";
+<a href=\"<?php echo \$this->baseUrl(" .
+        "'{$entityLowerCasePluralDashed}/new') ?>\">New {$entity}</a>";
     }
     
+    /**
+     * Gets the content of scaffolded new view
+     *
+     * @param string $entity 
+     * @param array $fields 
+     * @return string
+     */
     protected static function _getNewViewContent($entity)
     {
         $camelCaseToDash = new CamelCaseToDash;
@@ -106,6 +184,13 @@ class PHPSpec_Context_Zend_Tool_Context_ViewContent
 <a href=\"<?php echo \$this->baseUrl('{$lowerDashedPlural}') ?>\">Back</a>";
     }
     
+    /**
+     * Gets the content of scaffolded edit view
+     *
+     * @param string $entity 
+     * @param array $fields 
+     * @return string
+     */
     protected static function _getEditViewContent($entity, $fields)
     {
         $camelCaseToDash = new CamelCaseToDash;
@@ -116,12 +201,22 @@ class PHPSpec_Context_Zend_Tool_Context_ViewContent
         $lowerDashedPlural = $camelCaseToDash->filter($plural);
         
         return "<h1>Edit {$entity}</h1>
-<?php echo \$this->form->setAction('/{$lowerDashedPlural}/update/id/' . (int)\$this->id) ?>
+<?php echo \$this->form->setAction(" .
+        "'/{$lowerDashedPlural}/update/id/' . (int)\$this->id) ?>
 
-<a href=\"<?php echo \$this->baseUrl('{$lowerDashedPlural}/show/id/' . (int)\$this->id) ?>\">Show</a> |
-<a href=\"<?php echo \$this->baseUrl('{$lowerDashedPlural}') ?>\">Back</a>";
+<a href=\"<?php echo \$this->baseUrl(" .
+        "'{$lowerDashedPlural}/show/id/' . (int)\$this->id) ?>\">Show</a> |
+<a href=\"<?php echo \$this->baseUrl(" .
+        "'{$lowerDashedPlural}') ?>\">Back</a>";
     }
     
+    /**
+     * Gets the content of scaffolded show view
+     *
+     * @param string $entity 
+     * @param array $fields 
+     * @return string
+     */
     protected static function _getShowViewContent($entity, $fields)
     {
         $upperFirst = new UCFirst;
@@ -150,7 +245,10 @@ class PHPSpec_Context_Zend_Tool_Context_ViewContent
 
 $properties
 
-<a href=\"<?php echo \$this->baseUrl('{$dashedEntityPlural}/edit/id/' . (int)\$this->{$lowerEntity}->getId()) ?>\">Edit</a> |
-<a href=\"<?php echo \$this->baseUrl('{$dashedEntityPlural}') ?>\">Back</a>";
+<a href=\"<?php echo \$this->baseUrl(" .
+        "'{$dashedEntityPlural}/edit/id/' ." .
+        " (int)\$this->{$lowerEntity}->getId()) ?>\">Edit</a> |
+<a href=\"<?php echo \$this->baseUrl(" .
+        "'{$dashedEntityPlural}') ?>\">Back</a>";
     }
 }

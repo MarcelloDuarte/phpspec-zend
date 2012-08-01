@@ -55,7 +55,7 @@ class PHPSpec_Context_Zend_Tool_Context_ModelFile
     protected $_filesystemName = 'modelName';
     
     /**
-     * getName()
+     * Gets the name of the context class
      *
      * @return string
      */
@@ -65,8 +65,7 @@ class PHPSpec_Context_Zend_Tool_Context_ModelFile
     }
     
     /**
-     * init()
-     *
+     * @inheritdoc
      */
     public function init()
     {
@@ -89,8 +88,7 @@ class PHPSpec_Context_Zend_Tool_Context_ModelFile
     /**
      * Generates the content of the model file
      *
-     * @return void
-     * @author Marcello Duarte  
+     * @return string 
      */
     public function getContents()
     {

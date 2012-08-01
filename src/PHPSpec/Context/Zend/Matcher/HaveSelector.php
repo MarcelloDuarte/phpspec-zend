@@ -24,10 +24,11 @@ namespace PHPSpec\Context\Zend\Matcher;
 /**
  * @see \PHPSpec\Matcher
  */
-use \PHPSpec\Matcher,
-    \PHPSpec\Util\Validate,
-    \PHPSpec\Specification\Interceptor\InterceptorFactory,
-    \Zend_Dom_Query as DomQuery;
+use PHPSpec\Matcher;
+use PHPSpec\Util\Validate;
+use PHPSpec\Specification\Interceptor\InterceptorFactory;
+
+use Zend_Dom_Query as DomQuery;
 
 /**
  * @category   PHPSpec

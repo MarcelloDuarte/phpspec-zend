@@ -21,8 +21,9 @@
  */
 namespace PHPSpec\Context;
 
-use \PHPSpec\Context,
-    \PHPSpec\Context\Zend\ZendTest;
+use PHPSpec\Context;
+use PHPSpec\Context\Zend\ZendTest;
+
 /**
  * @category   PHPSpec
  * @package    PHPSpec_Zend

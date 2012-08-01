@@ -25,6 +25,14 @@
  */
 require_once 'Zend/Filter/Interface.php';
 
+/**
+ * @category   PHPSpec
+ * @package    PHPSpec_Zend
+ * @copyright  Copyright (c) 2007-2009 Pádraic Brady, Travis Swicegood
+ * @copyright  Copyright (c) 2010-2012 Pádraic Brady, Travis Swicegood,
+ *                                     Marcello Duarte
+ * @license    http://www.gnu.org/licenses/lgpl-3.0.txt GNU Lesser General Public Licence Version 3
+ */
 class PHPSpec_Context_Zend_Filter_UCFirst implements Zend_Filter_Interface
 {
      
@@ -44,6 +52,13 @@ class PHPSpec_Context_Zend_Filter_UCFirst implements Zend_Filter_Interface
         return $value;
     }
     
+    /**
+     * Provides a static interface for functional use
+     *
+     * @param string $value
+     * 
+     * @return string String filtered  
+     */
     public static function apply($value)
     {
         $filter = new static;

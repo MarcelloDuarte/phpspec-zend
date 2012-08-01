@@ -277,24 +277,38 @@ class Controller extends Context implements Observer
     {
         switch ($event['method']) {
             case 'render':
-                $this->_rendered[] = str_replace('.phtml', '', $event['action']);
+                $this->_rendered[] = str_replace(
+                    '.phtml', '', $event['action']
+                );
                 break;
             case 'renderScript':
-                $this->_rendered[] = str_replace('.phtml', '', $event['script']);
+                $this->_rendered[] = str_replace(
+                    '.phtml', '', $event['script']
+                );
                 break;
             case 'renderView':
-                $this->_rendered[] = str_replace('.phtml', '', $event['name']);
+                $this->_rendered[] = str_replace(
+                    '.phtml', '', $event['name']
+                );
                 break;
             case 'assign':
                 $this->_assigned[$event['viewVariable']] = $event['value'];
                 break;
             case 'redirect':
-                $this->response = $this->spec($this->_getZendTest()->getFrontController()->getResponse());
+                $this->response = $this->spec(
+                    $this->_getZendTest()->getFrontController()->getResponse()
+                );
                 $this->response->getActualValue()->setRedirect($event['url']);
                 break;
         }
     }
     
+    /**
+     * Used so controller can be checked e.g. $this->should->renderView('hi')
+     *
+     * @param string $property 
+     * @return PHPSpec\Specification\Interceptor
+     */
     public function __get($property)
     {
         if ($property === 'should') {
@@ -307,11 +321,22 @@ class Controller extends Context implements Observer
         trigger_error("Undefined property: $class::\$$property");
     }
     
+    /**
+     * Checks if a view has been rendered
+     *
+     * @param string $view 
+     * @return boolean
+     */
     public function hasRenderedView($view)
     {
         return in_array($view, $this->_rendered);
     }
     
+    /**
+     * Gets the rendered views
+     *
+     * @return array
+     */
     public function getRenderedViews()
     {
         return $this->_rendered;

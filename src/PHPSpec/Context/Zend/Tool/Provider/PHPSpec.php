@@ -70,7 +70,9 @@ class PHPSpec_Context_Zend_Tool_Provider_Phpspec
                 array('separator' => false, 'color' => 'green')
             );
             $response->appendContent("  spec/SpecHelper.php");
-            file_put_contents('spec/SpecHelper.php', $this->_getSpecHelperText());
+            file_put_contents(
+                'spec/SpecHelper.php', $this->_getSpecHelperText()
+            );
         }
 
         if (file_exists('spec/.phpspec')) {

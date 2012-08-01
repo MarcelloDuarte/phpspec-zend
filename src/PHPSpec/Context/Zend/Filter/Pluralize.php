@@ -477,8 +477,7 @@ require_once 'Zend/Filter/Interface.php';
 * configurations.
 * 
 * It was ported to PHP for the Akelos Framework, a
-* multilingual Ruby on Rails like framework for PHP that will
-* be launched soon.
+* multilingual Ruby on Rails like framework for PHP
 *
 * I have adapted a bit as is was not passing my tests :) (-- Marcello Duarte)
 * 

@@ -1,17 +1,57 @@
 <?php
-
+/**
+ * PHPSpec
+ *
+ * LICENSE
+ *
+ * This file is subject to the GNU Lesser General Public License Version 3
+ * that is bundled with this package in the file LICENSE.
+ * It is also available through the world-wide-web at this URL:
+ * http://www.gnu.org/licenses/lgpl-3.0.txt
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@phpspec.net so we can send you a copy immediately.
+ *
+ * @category  PHPSpec
+ * @package   PHPSpec
+ * @copyright Copyright (c) 2007-2009 Pádraic Brady, Travis Swicegood
+ * @copyright Copyright (c) 2010-2012 Pádraic Brady, Travis Swicegood,
+ *                                    Marcello Duarte
+ * @license   http://www.gnu.org/licenses/lgpl-3.0.txt GNU Lesser General Public Licence Version 3
+ */
 use PHPSpec_Context_Zend_Filter_LCFirst as LCFirst;
 use PHPSpec_Context_Zend_Filter_UCFirst as UCFirst;
 use PHPSpec_Context_Zend_Filter_Pluralize as Pluralize;
 
 use Zend_Filter_Word_CamelCaseToSeparator as CamelCaseToSeparator;
 
+/**
+ * @category   PHPSpec
+ * @package    PHPSpec_Zend
+ * @copyright  Copyright (c) 2007-2009 Pádraic Brady, Travis Swicegood
+ * @copyright  Copyright (c) 2010-2012 Pádraic Brady, Travis Swicegood,
+ *                                     Marcello Duarte
+ * @license    http://www.gnu.org/licenses/lgpl-3.0.txt GNU Lesser General Public Licence Version 3
+ */
 class PHPSpec_Context_Zend_Tool_Context_ViewSpec
 {
-    public static function create($viewSpecPath, $entity, $commaSeparatedFields, $view, $module)
+    /**
+     * Creates the view spec content for the scaffolded views
+     *
+     * @param string $viewSpecPath
+     * @param string $entity
+     * @param string $commaSeparatedFields
+     * @param string $view
+     * @param string $module
+     */
+    public static function create($viewSpecPath, $entity,
+        $commaSeparatedFields, $view, $module)
     {
         $createMethod = "create{$view}View";
-        if (!method_exists('PHPSpec_Context_Zend_Tool_Context_ViewSpec', $createMethod)) {
+        if (!method_exists(
+            'PHPSpec_Context_Zend_Tool_Context_ViewSpec',
+            $createMethod
+        )) {
             return;
         }
         $content = self::$createMethod($entity, $commaSeparatedFields);
@@ -23,6 +63,13 @@ class PHPSpec_Context_Zend_Tool_Context_ViewSpec
         file_put_contents($viewSpecPath, $content);
     }
     
+    /**
+     * Creates the edit view
+     *
+     * @param string $entity
+     * @param array  $fields
+     * @return string
+     */
     protected static function createEditView($entity, $fields)
     {
         $pluralize = new Pluralize;
@@ -32,14 +79,21 @@ class PHPSpec_Context_Zend_Tool_Context_ViewSpec
         $fields = explode(',', $fields);
         foreach ($fields as $field) {
             $fieldAndType = explode(':', $field);
-            list($field, $type) = count($fieldAndType) === 2 ? $fieldAndType : array($field, 'string');
+            list($field, $type) = count($fieldAndType) === 2 ?
+                                  $fieldAndType :
+                                  array($field, 'string');
             $fieldType = $type === 'text' ? 'textarea' : 'input';
-            $fieldsAndValues .= "'$field' => 'some $field'," . PHP_EOL . "            "; 
+            $fieldsAndValues .= "'$field' => 'some $field'," . PHP_EOL .
+                                "            "; 
             if ($fieldType === 'textarea') {
-                $rendered .= "\$this->rendered->should->haveSelector('{$fieldType}#{$field}', array('text' => 'some $field'));" . PHP_EOL . "        ";
+                $rendered .= "\$this->rendered->should->haveSelector(" .
+                "'{$fieldType}#{$field}', array('text' => 'some $field'));" .
+                PHP_EOL . "        ";
                 continue;
             }           
-            $rendered .= "\$this->rendered->should->haveSelector('{$fieldType}#{$field}[value~=\"some\"]');" . PHP_EOL . "        ";
+            $rendered .= "\$this->rendered->should->haveSelector(" .
+                         "'{$fieldType}#{$field}[value~=\"some\"]');" .
+                         PHP_EOL . "        ";
         }
         
         return <<<EDITVIEW
@@ -71,6 +125,13 @@ class DescribeEdit extends ViewContext
 EDITVIEW;
     }
     
+    /**
+     * Creates the index view
+     *
+     * @param string $entity
+     * @param array  $fields
+     * @return string
+     */
     protected static function createIndexView($entity, $fields)
     {
         $pluralize = new Pluralize;
@@ -80,13 +141,16 @@ EDITVIEW;
         
         $entityPlural = $pluralize->filter($entity);
         
-        $entityPluralLCFirst = strtolower($entityPlural[0]) . substr($entityPlural, 1);
+        $pluralLCFirst = strtolower($entityPlural[0]) .
+                               substr($entityPlural, 1);
         
-        $field1 = $field2 = $rendered = '';
+        $fieldOne = $fieldTwo = $rendered = '';
         $fields = explode(',', $fields);
         foreach ($fields as $field) {
             $fieldAndType = explode(':', $field);
-            list($field, $type) = count($fieldAndType) === 2 ? $fieldAndType : array($field, 'string');
+            list($field, $type) = count($fieldAndType) === 2 ?
+                                  $fieldAndType :
+                                  array($field, 'string');
             $ucFirst = $upperFirst->filter($field);
             $lcFirst = $lowerFirst->filter($field);
             $field = $camelCaseToSpace->filter($ucFirst);
@@ -94,26 +158,44 @@ EDITVIEW;
             switch (strtolower($type)) {
                 case 'datetime':
                     $date = date("Y-m-d");
-                    $field1 .= "'get{$ucFirst}' => '2011-09-12'," . PHP_EOL . "        ";
-                    $field2 .= "'get{$ucFirst}' => '" . $date . "'," . PHP_EOL . "        ";
-                    $rendered .= '$this->rendered->should->haveSelector(\'tr>th\', array(\'text\' => \'' . $field . '\'));
-        $this->rendered->should->haveSelector(\'tr>td\', array(\'text\' => \'2011-09-12\'));
-        $this->rendered->should->haveSelector(\'tr>td\', array(\'text\' => \'' . $date . '\'));';
+                    $fieldOne .= "'get{$ucFirst}' => '2011-09-12'," .
+                               PHP_EOL . "        ";
+                    $fieldTwo .= "'get{$ucFirst}' => '" . $date . "'," .
+                               PHP_EOL . "        ";
+                    $rendered .= '$this->rendered->should->haveSelector(' .
+                                 '\'tr>th\', array(\'text\' => \'' . $field .
+                                 '\'));
+        $this->rendered->should->haveSelector(\'tr>td\', array(' .
+                                 '\'text\' => \'2011-09-12\'));
+        $this->rendered->should->haveSelector(\'tr>td\', array(' .
+                                 '\'text\' => \'' . $date . '\'));';
                     break;
                 case 'integer':
                 case 'int':
-                    $field1 .= "'get{$ucFirst}' => 1," . PHP_EOL . "        ";
-                    $field2 .= "'get{$ucFirst}' => 2," . PHP_EOL . "        ";
-                    $rendered .= '$this->rendered->should->haveSelector(\'tr>th\', array(\'text\' => \'' . $field . '\'));
-        $this->rendered->should->haveSelector(\'tr>td\', array(\'text\' => \'1\'));
-        $this->rendered->should->haveSelector(\'tr>td\', array(\'text\' => \'2\'));';
+                    $fieldOne .= "'get{$ucFirst}' => 1," . PHP_EOL . "        ";
+                    $fieldTwo .= "'get{$ucFirst}' => 2," . PHP_EOL . "        ";
+                    $rendered .= '$this->rendered->should->haveSelector(' .
+                                 '\'tr>th\', array(\'text\' => \'' . $field .
+                                 '\'));
+        $this->rendered->should->haveSelector(' .
+                                 '\'tr>td\', array(\'text\' => \'1\'));
+        $this->rendered->should->haveSelector(' .
+                                 '\'tr>td\', array(\'text\' => \'2\'));';
                     break;
                 default:
-                    $field1 .= "'get{$ucFirst}' => 'one {$field}'," . PHP_EOL . "        ";
-                    $field2 .= "'get{$ucFirst}' => 'two {$field}'," . PHP_EOL . "        ";
-                    $rendered .= '$this->rendered->should->haveSelector(\'tr>th\', array(\'text\' => \'' . $field . '\'));
-        $this->rendered->should->haveSelector(\'tr>td\', array(\'text\' => \'one ' . $field . '\'));
-        $this->rendered->should->haveSelector(\'tr>td\', array(\'text\' => \'one ' . $field . '\'));';
+                    $fieldOne .= "'get{$ucFirst}' => 'one {$field}'," .
+                               PHP_EOL . "        ";
+                    $fieldTwo .= "'get{$ucFirst}' => 'two {$field}'," .
+                               PHP_EOL . "        ";
+                    $rendered .= '$this->rendered->should->haveSelector(' .
+                                 '\'tr>th\', array(\'text\' => \'' . $field .
+                                 '\'));
+        $this->rendered->should->haveSelector(' .
+                                 '\'tr>td\', array(\'text\' => \'one ' .
+                                 $field . '\'));
+        $this->rendered->should->haveSelector(' .
+                                 '\'tr>td\', array(\'text\' => \'one ' .
+                                 $field . '\'));';
             }
         }
 
@@ -128,21 +210,21 @@ class DescribeIndex extends ViewContext
 {
     function before()
     {
-        \$this->{$entityPluralLCFirst} = array(
+        \$this->{$pluralLCFirst} = array(
             \$this->stub('{$entity}', array(
                 'getId' => 1,
-                $field1
+                $fieldOne
             )),
             \$this->stub('{$entity}', array(
                 'getId' => 2,
-                $field2
+                $fieldTwo
             ))
         );
     }
     
     function itRendersAListOf{$entityPlural}()
     {
-        \$this->assign('{$entityPluralLCFirst}', \$this->{$entityPluralLCFirst});
+        \$this->assign('{$pluralLCFirst}', \$this->{$pluralLCFirst});
         \$this->render();
         $rendered
     }
@@ -150,6 +232,13 @@ class DescribeIndex extends ViewContext
 INDEXVIEW;
     }
     
+    /**
+     * Creates the new view
+     *
+     * @param string $entity
+     * @param array  $fields
+     * @return string
+     */
     protected static function createNewView($entity, $fields)
     {
         $pluralize = new Pluralize;
@@ -158,12 +247,16 @@ INDEXVIEW;
         $fields = explode(',', $fields);
         foreach ($fields as $field) {
             $fieldAndType = explode(':', $field);
-            list($field, $type) = count($fieldAndType) === 2 ? $fieldAndType : array($field, 'string');
+            list($field, $type) = count($fieldAndType) === 2 ?
+                                  $fieldAndType :
+                                  array($field, 'string');
             
             if ($type === 'text') {
-                $rendered = '$this->rendered->should->haveSelector(\'textarea#' . $field . '\');';
+                $rendered = '$this->rendered->should->haveSelector(' .
+                            '\'textarea#' . $field . '\');';
             } else {
-                $rendered = '$this->rendered->should->haveSelector(\'input#' . $field . '\');';                
+                $rendered = '$this->rendered->should->haveSelector(' .
+                            '\'input#' . $field . '\');';                
             }
         }
         
@@ -194,6 +287,13 @@ class DescribeNew extends ViewContext
 NEWVIEW;
     }
     
+    /**
+     * Creates the show view
+     *
+     * @param string $entity
+     * @param array  $fields
+     * @return string
+     */
     protected static function createShowView($entity, $fields)
     {
         $upperFirst = new UCFirst;
@@ -208,12 +308,16 @@ NEWVIEW;
         $fields = explode(',', $fields);
         foreach ($fields as $field) {
             $fieldAndType = explode(':', $field);
-            list($field, $type) = count($fieldAndType) === 2 ? $fieldAndType : array($field, 'string');
+            list($field, $type) = count($fieldAndType) === 2 ?
+                                  $fieldAndType :
+                                  array($field, 'string');
             $ucFirst = $upperFirst->filter($field);
             $field = $camelCaseToSpace->filter($ucFirst);
             
-            $data .= "'get{$ucFirst}' => 'some $field'," . PHP_EOL . "            ";
-            $rendered .= '$this->rendered->should->haveSelector(\'p>b\', array(\'text\' => \'' . $field .':\'));
+            $data .= "'get{$ucFirst}' => 'some $field'," . PHP_EOL .
+                     "            ";
+            $rendered .= '$this->rendered->should->haveSelector(\'p>b\', ' .
+                            'array(\'text\' => \'' . $field .':\'));
         $this->rendered->should->contain(\'some ' . $field . '\');';
         }
         

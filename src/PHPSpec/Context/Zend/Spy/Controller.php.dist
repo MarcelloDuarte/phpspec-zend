@@ -1,16 +1,57 @@
-
+/**
+ * PHPSpec
+ *
+ * LICENSE
+ *
+ * This file is subject to the GNU Lesser General Public License Version 3
+ * that is bundled with this package in the file LICENSE.
+ * It is also available through the world-wide-web at this URL:
+ * http://www.gnu.org/licenses/lgpl-3.0.txt
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@phpspec.net so we can send you a copy immediately.
+ *
+ * @category  PHPSpec
+ * @package   PHPSpec
+ * @copyright Copyright (c) 2007-2009 Pádraic Brady, Travis Swicegood
+ * @copyright Copyright (c) 2010-2012 Pádraic Brady, Travis Swicegood,
+ *                                    Marcello Duarte
+ * @license   http://www.gnu.org/licenses/lgpl-3.0.txt GNU Lesser General Public Licence Version 3
+ */
 use PHPSpec\Context\Zend\Spy\View as SpyView;
 use PHPSpec\Context\Zend\Spy\Observer;
 use PHPSpec\Context\Zend\Spy\Subject;
 
-use \Zend_Controller_Action_HelperBroker as HelperBroker;
-use \Zend_Controller_Action_Helper_ViewRenderer as ViewRenderer;
+use Zend_Controller_Action_HelperBroker as HelperBroker;
+use Zend_Controller_Action_Helper_ViewRenderer as ViewRenderer;
+use Zend_Controller_Request_Abstract as Request;
+use Zend_Controller_Response_Abstract as Response;
 
+/**
+ * @category   PHPSpec
+ * @package    PHPSpec_Zend
+ * @copyright  Copyright (c) 2007-2009 Pádraic Brady, Travis Swicegood
+ * @copyright  Copyright (c) 2010-2012 Pádraic Brady, Travis Swicegood,
+ *                                     Marcello Duarte
+ * @license    http://www.gnu.org/licenses/lgpl-3.0.txt GNU Lesser General Public Licence Version 3
+ */
 class {spyController} extends {userController} implements Subject
 {
+    /**
+     * Observers attached to the controller
+     *
+     * @var string
+     */
     protected $observers = array();
     
-    public function __construct(Zend_Controller_Request_Abstract $request, Zend_Controller_Response_Abstract $response, array $invokeArgs = array())
+    /**
+     * Creates the controller
+     *
+     * @param Request $request
+     * @param Response $response
+     * @param array $invokeArgs
+     */
+    public function __construct(Request $request, Response $response, array $invokeArgs = array())
     {
         parent::__construct($request, $response, $invokeArgs);
         $helper = $this->_helper;
@@ -20,18 +61,35 @@ class {spyController} extends {userController} implements Subject
         $helper::addHelper($viewRenderer);
     }
     
+    /**
+     * Initiates the view
+     *
+     * @return PHPSpec\Context\Zend\Spy\View
+     */
     public function initView()
     {
         $this->view = new SpyView;
         return $this->view;
     }
     
+    /**
+     * Attaches an observer
+     *
+     * @param Observer $observer
+     */
     public function attach(Observer $observer)
     {
         $this->observers[] = $observer;
         $this->view->attach($observer);
     }
     
+    /**
+     * Intercepts rendering the view and notify the observers
+     *
+     * @param string  $action
+     * @param string  $name
+     * @param boolean $noController
+     */
     public function render($action = null, $name = null, $noController = false)
     {
         $spyData = array(
@@ -43,6 +101,12 @@ class {spyController} extends {userController} implements Subject
         $this->notify($spyData);
     }
     
+    /**
+     * Intercepts rendering a view script and notify the observers
+     *
+     * @param string  $script
+     * @param string  $name
+     */
     public function renderScript($script, $name = null)
     {
         $spyData = array(
@@ -53,6 +117,12 @@ class {spyController} extends {userController} implements Subject
         $this->notify($spyData);
     }
     
+    /**
+     * Intercepts redirects
+     *
+     * @param string $url
+     * @param array  $options
+     */
     public function _redirect($url, array $options = array())
     {
         $spyData = array(
@@ -63,6 +133,11 @@ class {spyController} extends {userController} implements Subject
         $this->notify($spyData);
     }
     
+    /**
+     * Notifies observers
+     *
+     * @param array $spyData
+     */
     public function notify($spyData)
     {
         foreach($this->observers as $observer) {

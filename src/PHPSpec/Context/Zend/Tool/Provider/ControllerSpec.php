@@ -22,11 +22,12 @@
  
 require_once 'PHPSpec/Context/Zend/Filter/UCFirst.php';
 
-use PHPSpec_Context_Zend_Filter_UCFirst as UCFirst,
-    Zend_Filter_Word_DashToCamelCase as DashToCamelCase,
-    Zend_Filter_Word_CamelCaseToDash as CamelCaseToDash,
-    Zend_Tool_Project_Provider_Exception as ProviderException,
-    Zend_Tool_Project_Provider_Action as ActionProvider;
+use PHPSpec_Context_Zend_Filter_UCFirst as UCFirst;
+
+use Zend_Filter_Word_DashToCamelCase as DashToCamelCase;
+use Zend_Filter_Word_CamelCaseToDash as CamelCaseToDash;
+use Zend_Tool_Project_Provider_Exception as ProviderException;
+use Zend_Tool_Project_Provider_Action as ActionProvider;
 
 /**
  * @category   PHPSpec

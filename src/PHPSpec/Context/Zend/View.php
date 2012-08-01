@@ -34,9 +34,32 @@ use \PHPSpec\Context,
  */
 class View extends Context
 {
+    /**
+     * The intercepted content of the rendered view script
+     *
+     * @var PHPSpec\Specification\Interceptor
+     */
     public $rendered;
+    
+    /**
+     * The view object
+     *
+     * @var Zend_View
+     */
     protected $_view;
+    
+    /**
+     * The view script to render
+     *
+     * @var string
+     */
     protected $_viewScript;
+    
+    /**
+     * The controller's name
+     *
+     * @var string
+     */
     protected $_controllerName;
     
     /**
@@ -92,7 +115,9 @@ class View extends Context
      */
     public function render()
     {
-        $this->rendered = $this->spec($this->_view->render($this->_viewScript));
+        $this->rendered = $this->spec(
+            $this->_view->render($this->_viewScript)
+        );
     }
     
 }

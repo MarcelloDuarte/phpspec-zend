@@ -53,6 +53,12 @@ class Dispatcher extends StandardDispatcher
     
     /**
      * @inheritdoc
+     *
+     * This code is based on the ZF Standard dispatcher
+     * @licence http://framework.zend.com/license/new-bsd
+     *
+     * Copyright (c) 2005-2010, Zend Technologies USA, Inc.
+     * All rights reserved.
      */
     public function dispatch(Request $request, Response $response)
     {
