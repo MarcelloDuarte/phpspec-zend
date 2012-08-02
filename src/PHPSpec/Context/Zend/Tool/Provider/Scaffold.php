@@ -89,7 +89,7 @@ class PHPSpec_Context_Zend_Tool_Provider_Scaffold extends ProviderAbstract
         $controller = new ControllerSpec;
         $model = new ModelSpec;
         $pluralize = new Pluralize;
-        var_dump(get_class($this->_registry->getResponse()));exit;
+        
         $controller->setRegistry($this->_registry);
         $model->setRegistry($this->_registry);
         $profile = $this->_loadProfile();
