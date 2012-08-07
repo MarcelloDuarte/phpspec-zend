@@ -11,10 +11,10 @@
         }
     ],
     "autoload": {
-        "psr-0": { "PHPSpec\\Context": "src/" }
+        "psr-0": { "PHPSpec\\Context\\Zend": "src/" }
     },
     "require": {
         "php": ">=5.3.2",
-        "phpspec/phpspec": "1.4.0"
+        "phpspec/phpspec": "1.4.1"
     }
 }
