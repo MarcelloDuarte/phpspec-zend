@@ -204,7 +204,7 @@ MACRO
         $specHelper = str_replace(
             '<?php' . PHP_EOL, '<?php
 
-$configure->includeMacros(__DIR__ . "/ControllersMacros.php");', $specHelper
+$configure->includeMacros("ControllersMacros.php");', $specHelper
         );
         file_put_contents($specHelperPath, $specHelper);
 
